@@ -1,0 +1,130 @@
+# Bundle Audit
+# Standalone audit recipe for evaluating an existing bundle.
+#
+# Pattern: flat sequential recipe (no stages, no loops).
+# Use this when you want to audit and score an existing bundle without
+# running the full development cycle. Useful for:
+#   - Evaluating a bundle before deciding to improve it
+#   - Periodic quality checks on existing bundles
+#   - Comparing bundles against convergence criteria
+#
+# Usage:
+#   amplifier run "execute bundlewizard:recipes/bundle-audit.yaml
+#     with bundle_path='~/dev/my-existing-bundle'"
+
+name: "bundle-audit"
+description: "Standalone audit of an existing bundle — three-level evaluation with structured findings"
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "audit", "evaluation", "standalone", "improve"]
+
+context:
+  bundle_path: ""    # Required: Path to the existing bundle to audit
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Step 1: Run Full Audit
+  # bundle-auditor reads the entire bundle and produces a structured findings
+  # report covering structural issues, philosophical violations, and capability
+  # gaps. Delegates to foundation-expert and amplifier-expert.
+  # ---------------------------------------------------------------------------
+  - id: "run-audit"
+    agent: "bundlewizard:bundle-auditor"
+    prompt: |
+      Perform a full audit of the existing bundle.
+
+      BUNDLE PATH: {{bundle_path}}
+
+      Read the entire bundle:
+      - bundle.md — entry point, includes, frontmatter
+      - behaviors/*.yaml — behavior files, agent registrations, tool mounts
+      - agents/*.md — agent definitions, descriptions, tools, @mentions
+      - context/*.md — context files, content, references
+      - modes/*.md — mode definitions, permissions, transitions
+      - recipes/*.yaml — recipe definitions, steps, agent references
+      - Any other files (skills, templates, docs)
+
+      Evaluate against all three convergence levels.
+      Delegate to foundation:foundation-expert for structural and philosophical review.
+      Delegate to amplifier:amplifier-expert for ecosystem positioning.
+
+      Produce a structured findings report with:
+      - Level 1 (Structural): pass/fail for each gate
+      - Level 2 (Philosophical): scored rubric for each criterion
+      - Level 3 (Functional): domain-specific assessment
+      - Capability gaps: what's missing
+      - Evolution recommendations: what the bundle could become
+      - Priority-ordered issue list
+    output: "audit_findings"
+    timeout: 900
+
+  # ---------------------------------------------------------------------------
+  # Step 2: Score Current State
+  # bundle-evaluator runs the formal three-level evaluation and returns
+  # numerical scores. This gives a precise quality measurement.
+  # ---------------------------------------------------------------------------
+  - id: "score-bundle"
+    agent: "bundlewizard:bundle-evaluator"
+    prompt: |
+      Score the existing bundle using the three-level convergence criteria.
+
+      BUNDLE PATH: {{bundle_path}}
+
+      AUDIT FINDINGS:
+      {{audit_findings}}
+
+      Using the audit findings as input, produce formal three-level scores:
+
+      Level 1 (Structural): PASS or FAIL
+      - Check each gate from convergence-criteria.md
+
+      Level 2 (Philosophical): Score 0.0-1.0
+      - Thin bundle pattern (25%)
+      - Context sink discipline (25%)
+      - Agent description quality (25%)
+      - Composition hygiene (25%)
+
+      Level 3 (Functional): Score 0.0-1.0
+      - Does the bundle achieve its stated purpose?
+
+      Return ONLY a JSON object:
+      {
+        "level_1": "PASS" or "FAIL",
+        "level_2_score": "X.XX",
+        "level_3_score": "X.XX",
+        "meets_convergence": "true" or "false",
+        "top_issues": ["issue 1", "issue 2", "issue 3"]
+      }
+    output: "scores"
+    parse_json: true
+    timeout: 600
+
+  # ---------------------------------------------------------------------------
+  # Step 3: Return Results
+  # Combine findings and scores into a final audit report.
+  # This is a summary step — just formats the output for the user.
+  # ---------------------------------------------------------------------------
+  - id: "format-results"
+    type: bash
+    command: |
+      python3 -c "
+      import json
+
+      findings = '''{{audit_findings}}'''
+      scores_raw = '''{{scores}}'''
+
+      try:
+          scores = json.loads(scores_raw)
+      except Exception:
+          scores = {'error': 'Could not parse scores'}
+
+      report = {
+          'bundle_path': '{{bundle_path}}',
+          'scores': scores,
+          'findings_summary': findings[:500] + '...' if len(findings) > 500 else findings,
+          'full_findings': 'See audit_findings output for complete details'
+      }
+      print(json.dumps(report, indent=2))
+      "
+    output: "audit_report"
+    parse_json: true
