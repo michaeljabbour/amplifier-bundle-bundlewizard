@@ -1,0 +1,341 @@
+# Bundle Development Cycle
+# Full interactive cycle with 3 approval gates: explore → spec → plan → execute → verify → finish.
+#
+# Pattern: staged recipe with human checkpoints (same pattern as harness-development-cycle).
+# Each stage has a defined job; approval gates let the human validate at critical junctures.
+#
+# Stages:
+#   1. exploration  — bundle-explorer + bundle-spec-writer           → APPROVAL GATE
+#   2. planning     — bundle-plan-writer                             → APPROVAL GATE
+#   3. execution    — invokes bundle-refinement-loop sub-recipe      (no gate — let it run)
+#   4. verification — bundle-evaluator independent assessment        → APPROVAL GATE
+#   5. completion   — bundle-packager delivers the artifact
+#
+# Context variables:
+#   bundle_description — What the user wants (e.g., "a bundle that helps with code review")
+#   output_dir         — Where to put generated artifacts (e.g., "~/dev/my-new-bundle")
+#   path               — "create" for new bundles, or a filesystem path/URL for improve mode
+#
+# Usage:
+#   amplifier run "execute bundlewizard:recipes/bundle-development-cycle.yaml
+#     with bundle_description='a bundle that helps with code review'
+#     output_dir='~/dev/amplifier-bundle-code-review'
+#     path='create'"
+
+name: "bundle-development-cycle"
+description: "Full interactive bundle development cycle with 3 approval gates — explore, spec, plan, execute, verify, finish"
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "development-cycle", "staged", "approval-gate", "interactive", "full-cycle"]
+
+context:
+  bundle_description: ""   # Required: What to build (e.g., "a bundle that helps with code review")
+  output_dir: "output"     # Where to put generated artifacts
+  path: "create"           # "create" for new bundles, or a path/URL for improve mode
+
+stages:
+  # ============================================================================
+  # STAGE 1: Exploration
+  # Understand what the user needs and produce a bundle specification.
+  # Two steps: explorer interviews → spec-writer documents the design.
+  # APPROVAL GATE: human reviews the spec before we invest in planning.
+  # ============================================================================
+  - name: "exploration"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Explore and interview
+      # -----------------------------------------------------------------------
+      - id: "explore-needs"
+        agent: "bundlewizard:bundle-explorer"
+        prompt: |
+          Explore the user's needs and produce an interview summary.
+
+          BUNDLE DESCRIPTION: {{bundle_description}}
+          OUTPUT DIR: {{output_dir}}
+          PATH MODE: {{path}}
+
+          {{#if path == 'create'}}
+          This is a CREATE NEW bundle request. Investigate thoroughly:
+          1. What problem does this bundle solve? Who uses it?
+          2. Does something similar exist? (delegate to bundlewizard:ecosystem-scout)
+          3. What tier? Behavior / Bundle / Application Bundle
+          4. What capabilities does it need? (agents, tools, modes, recipes, context)
+          5. What should it delegate to existing experts vs carry itself?
+          {{else}}
+          This is an IMPROVE EXISTING bundle request. The bundle is at: {{path}}
+          1. Read the existing bundle (bundle.md, behaviors, agents, context)
+          2. Delegate to bundlewizard:bundle-auditor for full three-level audit
+          3. Present findings: structural issues, philosophical violations, capability gaps
+          4. Determine scope: which improvements to make
+          {{/if}}
+
+          Return a comprehensive interview summary including:
+          - Path decision (create new / improve existing)
+          - Target name or path
+          - Tier decision (behavior / bundle / application bundle)
+          - Problem description and capabilities needed
+          - Delegation decisions (what to delegate to existing experts)
+          - Ecosystem survey results (if applicable)
+          - Audit findings (if improve path)
+        output: "interview_summary"
+        timeout: 600
+
+      # -----------------------------------------------------------------------
+      # Step 2: Write the spec
+      # -----------------------------------------------------------------------
+      - id: "write-spec"
+        agent: "bundlewizard:bundle-spec-writer"
+        prompt: |
+          Produce a concrete bundle specification from the interview summary.
+
+          BUNDLE DESCRIPTION: {{bundle_description}}
+          OUTPUT DIR: {{output_dir}}
+          PATH MODE: {{path}}
+
+          INTERVIEW SUMMARY:
+          {{interview_summary}}
+
+          Create a bundle specification document at:
+          {{output_dir}}/bundle-spec.md
+
+          The specification MUST include:
+          - Output tier: behavior | bundle | application-bundle
+          - Complete file structure (tree diagram of all files)
+          - Component design: agents, behaviors, context files, modes, recipes
+          - Delegation map: which existing experts handle which concerns
+          - Convergence expectations: Level 1 gates, Level 2 targets, Level 3 criteria
+          - For improve path: ordered list of changes from audit findings
+
+          Delegate to foundation:foundation-expert to validate the composition.
+          Write the file and return its path.
+        output: "spec_path"
+        timeout: 600
+
+    # APPROVAL GATE: Human reviews the spec before we invest in planning
+    approval:
+      required: true
+      prompt: |
+        ======================================================================
+        STAGE 1 COMPLETE — SPEC READY FOR REVIEW
+        ======================================================================
+
+        The bundle has been explored and a specification has been written.
+
+        INTERVIEW SUMMARY:
+        {{interview_summary}}
+
+        SPEC FILE: {{spec_path}}
+
+        Please review the specification:
+        - Is the bundle scope correctly understood?
+        - Is the output tier appropriate?
+        - Are the components comprehensive and correctly designed?
+        - Is the delegation map sensible?
+        - Are the convergence expectations measurable?
+
+        APPROVE to proceed to planning.
+        DENY to revise the spec (provide feedback and we will iterate).
+        ======================================================================
+      timeout: 0
+      default: "deny"
+
+  # ============================================================================
+  # STAGE 2: Planning
+  # Plan writer creates an implementation plan based on the approved spec.
+  # APPROVAL GATE: human reviews the plan before autonomous generation begins.
+  # ============================================================================
+  - name: "planning"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 3: Write the plan
+      # -----------------------------------------------------------------------
+      - id: "write-plan"
+        agent: "bundlewizard:bundle-plan-writer"
+        prompt: |
+          Create an implementation plan from the approved bundle specification.
+
+          BUNDLE DESCRIPTION: {{bundle_description}}
+          OUTPUT DIR: {{output_dir}}
+          PATH MODE: {{path}}
+          SPEC: {{spec_path}}
+
+          Read the spec file carefully. Produce a concrete implementation plan at:
+          {{output_dir}}/bundle-plan.md
+
+          The plan MUST include:
+          - File-by-file generation order (create) or ordered renovation tasks (improve)
+          - Dependencies between files (what must exist before what)
+          - For each file: exact path, what it should contain, validation check
+          - Task ordering by dependency graph
+          - Estimated number of convergence iterations
+
+          Write the file and return its path.
+        output: "plan_path"
+        timeout: 600
+
+    # APPROVAL GATE: Human reviews the plan before autonomous generation
+    approval:
+      required: true
+      prompt: |
+        ======================================================================
+        STAGE 2 COMPLETE — PLAN READY FOR REVIEW
+        ======================================================================
+
+        The implementation plan has been written.
+
+        SPEC: {{spec_path}}
+        PLAN FILE: {{plan_path}}
+
+        Please review the plan:
+        - Does the plan fully address the spec requirements?
+        - Is the file generation order correct (dependencies respected)?
+        - Are the validation checks sufficient?
+        - Any concerns before autonomous generation begins?
+
+        APPROVE to start the refinement loop (this may take several minutes).
+        DENY to revise the plan (provide feedback and we will iterate).
+        ======================================================================
+      timeout: 0
+      default: "deny"
+
+  # ============================================================================
+  # STAGE 3: Execution
+  # Invokes bundle-refinement-loop as a sub-recipe.
+  # Iterates generate/critique/refine/evaluate until convergence.
+  # No approval gate here — the loop runs autonomously.
+  # ============================================================================
+  - name: "execution"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 4: Run the refinement loop
+      # -----------------------------------------------------------------------
+      - id: "run-refinement-loop"
+        type: recipe
+        recipe: "bundlewizard:recipes/bundle-refinement-loop.yaml"
+        context:
+          spec_path: "{{spec_path}}"
+          plan_path: "{{plan_path}}"
+          output_path: "{{output_dir}}/bundle"
+          converged: "false"
+          iteration: "0"
+        output: "refinement_result"
+        timeout: 3600
+        on_error: "continue"
+
+  # ============================================================================
+  # STAGE 4: Verification
+  # bundle-evaluator runs independent three-level assessment.
+  # This is independent verification — not the same evaluator from the loop.
+  # APPROVAL GATE: human reviews the evidence before packaging.
+  # ============================================================================
+  - name: "verification"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 5: Independent three-level evaluation
+      # -----------------------------------------------------------------------
+      - id: "run-verification"
+        agent: "bundlewizard:bundle-evaluator"
+        prompt: |
+          Run independent verification of the generated bundle using all three convergence levels.
+
+          SPEC: {{spec_path}}
+          BUNDLE PATH: {{output_dir}}/bundle
+          REFINEMENT RESULT: {{refinement_result}}
+
+          This is INDEPENDENT verification — not the same evaluation from the generation loop.
+          Evaluate with fresh eyes against all three levels:
+
+          Level 1 (Structural): All pass/fail gates from convergence-criteria.md.
+          - Does bundle.md parse? Do agent references resolve? Are URIs valid?
+          - Any duplicate context loading? Mode files discoverable?
+
+          Level 2 (Philosophical): Score each of the 4 criteria.
+          - Thin bundle pattern, context sink discipline, agent description quality, composition hygiene.
+          - Delegate to foundation:foundation-expert for authoritative checks.
+
+          Level 3 (Functional): Does the bundle achieve its stated purpose?
+          - Delegate to the appropriate domain expert for functional assessment.
+          - Test the primary use case end-to-end if possible.
+
+          Return a verification report including:
+          - Level 1: PASS/FAIL with details for each gate
+          - Level 2: scored rubric (threshold: 0.85)
+          - Level 3: scored assessment (threshold: 0.80)
+          - Overall: CONVERGED or NOT CONVERGED
+          - Recommendation: SHIP IT or NEEDS MORE WORK
+        output: "verification_report"
+        timeout: 900
+
+    # APPROVAL GATE: Human reviews evidence before packaging
+    approval:
+      required: true
+      prompt: |
+        ======================================================================
+        STAGE 4 COMPLETE — VERIFICATION RESULTS READY
+        ======================================================================
+
+        Independent verification has been run on the generated bundle.
+
+        VERIFICATION REPORT:
+        {{verification_report}}
+
+        SPEC: {{spec_path}}
+        BUNDLE: {{output_dir}}/bundle
+
+        Review the evidence:
+        - Does Level 1 (structural) pass all gates?
+        - Does Level 2 (philosophical) meet the 0.85 threshold?
+        - Does Level 3 (functional) meet the 0.80 threshold?
+        - Any remaining issues you are concerned about?
+
+        APPROVE to package and deliver the bundle.
+        DENY to return to execution (provide feedback on what to improve).
+        ======================================================================
+      timeout: 0
+      default: "deny"
+
+  # ============================================================================
+  # STAGE 5: Completion
+  # Package the verified bundle — version stamp, git, deliver.
+  # ============================================================================
+  - name: "completion"
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 6: Package and deliver
+      # -----------------------------------------------------------------------
+      - id: "package-bundle"
+        agent: "bundlewizard:bundle-packager"
+        prompt: |
+          Package the verified bundle for delivery.
+
+          BUNDLE PATH: {{output_dir}}/bundle
+          OUTPUT DIR: {{output_dir}}
+          SPEC: {{spec_path}}
+          PATH MODE: {{path}}
+          VERIFICATION REPORT: {{verification_report}}
+
+          Packaging steps:
+          1. Add version stamp to bundle.md frontmatter (generated_by metadata with convergence scores)
+          2. Generate or update README.md with usage instructions
+
+          {{#if path == 'create'}}
+          For CREATE NEW path:
+          3. Run git init (if not already a git repo)
+          4. Stage all files: git add .
+          5. First commit: git commit -m "feat: initial bundle generation by bundlewizard"
+          6. Offer GitHub repo creation
+          {{else}}
+          For IMPROVE EXISTING path:
+          3. Create feature branch: git checkout -b bundlewizard/improvements
+          4. Stage changes: git add .
+          5. Commit: git commit -m "feat: bundle improvements by bundlewizard"
+          6. Offer merge, PR, keep, or discard
+          {{/if}}
+
+          Return a completion summary:
+          - Final artifact paths
+          - Convergence scores achieved
+          - How to use this bundle
+          - Delivery option chosen
+        output: "completion_summary"
+        timeout: 600
