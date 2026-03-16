@@ -1,0 +1,192 @@
+# Bundle Batch Generation
+# Foreach batch recipe — generates bundles for multiple targets from STATE.yaml.
+#
+# Pattern: factory with foreach over targets (same pattern as harness-factory-generation).
+# Individual target failures do not halt the factory (on_error: continue).
+# Results (success or failure) are written back to STATE.yaml per target.
+#
+# Prerequisites:
+#   - targets list must be non-empty
+#   - output_dir must be writable
+#   - STATE.yaml will be created at state_yaml_path if it doesn't exist
+#
+# Usage:
+#   amplifier run "execute bundlewizard:recipes/bundle-batch-generation.yaml
+#     with targets=['code-review helper','git worktree manager','terraform module analyzer']
+#     state_yaml_path=output/STATE.yaml
+#     output_dir=output/bundles"
+
+name: "bundle-batch-generation"
+description: "Batch bundle generation — foreach over targets list with STATE.yaml tracking"
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "factory", "foreach", "batch", "state-yaml", "autonomous"]
+
+context:
+  targets: []                             # Required: list of bundle descriptions to generate
+  state_yaml_path: "output/STATE.yaml"    # Path to STATE.yaml tracking file
+  output_dir: "output/bundles"            # Where to accumulate generated bundles
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Step 1: Load State
+  # Read STATE.yaml to get current generation status.
+  # Produces a JSON object with current state for downstream steps.
+  # If STATE.yaml doesn't exist yet, creates an empty initial state.
+  # ---------------------------------------------------------------------------
+  - id: "load-state"
+    type: bash
+    command: |
+      python3 -c "
+      import yaml, json, sys
+
+      state_path = '{{state_yaml_path}}'
+      try:
+          with open(state_path, 'r') as f:
+              state = yaml.safe_load(f)
+          print(json.dumps(state))
+      except FileNotFoundError:
+          # Initialize empty state if file doesn't exist yet
+          initial = {
+              'version': '1.0.0',
+              'bundles': {},
+              'summary': {
+                  'total': 0,
+                  'converged': 0,
+                  'in_progress': 0,
+                  'failed': 0
+              }
+          }
+          print(json.dumps(initial))
+      except Exception as e:
+          print(json.dumps({'error': str(e)}), file=sys.stderr)
+          sys.exit(1)
+      "
+    output: "state"
+    parse_json: true
+
+  # ---------------------------------------------------------------------------
+  # Step 2: Generate Per Target
+  # Foreach loop over the targets list.
+  # Each target gets a full bundle-development-cycle run.
+  # Individual failures are isolated — the factory continues.
+  # Results collected into all_bundles.
+  # ---------------------------------------------------------------------------
+  - id: "generate-per-target"
+    foreach: "{{targets}}"
+    as: "bundle_target"
+    type: recipe
+    recipe: "bundlewizard:recipes/bundle-development-cycle.yaml"
+    context:
+      bundle_description: "{{bundle_target}}"
+      output_dir: "{{output_dir}}/{{bundle_target}}"
+      path: "create"
+    on_error: "continue"
+    collect: "all_bundles"
+
+  # ---------------------------------------------------------------------------
+  # Step 3: Verify Factory
+  # bundle-evaluator reviews ALL generated bundles holistically.
+  # Checks for consistency, quality patterns, and any systemic issues.
+  # ---------------------------------------------------------------------------
+  - id: "verify-factory"
+    agent: "bundlewizard:bundle-evaluator"
+    prompt: |
+      Review all generated bundles from the batch factory run.
+
+      OUTPUT DIR: {{output_dir}}
+      TARGETS: {{targets}}
+      STATE FILE: {{state_yaml_path}}
+
+      GENERATION RESULTS:
+      {{all_bundles}}
+
+      Perform holistic factory verification:
+      1. For each target that completed: verify bundle artifact structure
+      2. Check convergence scores — are all three levels within acceptable range?
+      3. Identify any systemic patterns across failed targets
+      4. Note any targets that need retry or manual intervention
+      5. Assess overall factory health
+
+      Return a factory verification report including:
+      - Per-target status (converged, Level 1/2/3 scores, artifact path)
+      - Overall success rate (converged / total)
+      - Systemic issues (if any)
+      - Targets requiring retry
+      - Recommendation for next steps
+    output: "factory_verification"
+    timeout: 900
+
+  # ---------------------------------------------------------------------------
+  # Step 4: Update State
+  # Write generation results back to STATE.yaml.
+  # Each target gets its status, convergence scores, and artifact path recorded.
+  # ---------------------------------------------------------------------------
+  - id: "update-state"
+    type: bash
+    command: |
+      python3 -c "
+      import yaml, json, os, sys
+      from datetime import datetime
+
+      state_path = '{{state_yaml_path}}'
+      output_dir = '{{output_dir}}'
+      targets_raw = '''{{targets}}'''
+      all_bundles_raw = '''{{all_bundles}}'''
+      verification_raw = '''{{factory_verification}}'''
+
+      # Load existing state (or empty)
+      try:
+          with open(state_path, 'r') as f:
+              state = yaml.safe_load(f) or {}
+      except FileNotFoundError:
+          state = {}
+
+      # Ensure structure
+      if 'bundles' not in state:
+          state['bundles'] = {}
+      if 'summary' not in state:
+          state['summary'] = {'total': 0, 'converged': 0, 'in_progress': 0, 'failed': 0}
+
+      # Parse targets list
+      try:
+          targets = json.loads(targets_raw)
+      except Exception:
+          targets = [t.strip().strip('\"') for t in targets_raw.strip('[]').split(',') if t.strip()]
+
+      # Update each target entry
+      timestamp = datetime.utcnow().isoformat() + 'Z'
+      for target in targets:
+          target_key = str(target).replace('/', '-').replace(' ', '-').lower()
+          artifact_path = os.path.join(output_dir, target_key)
+          has_artifact = os.path.isdir(artifact_path) and os.path.exists(os.path.join(artifact_path, 'bundle', 'bundle.md'))
+
+          if target_key not in state['bundles']:
+              state['bundles'][target_key] = {}
+
+          state['bundles'][target_key].update({
+              'description': str(target),
+              'status': 'converged' if has_artifact else 'failed',
+              'artifact_path': artifact_path if has_artifact else None,
+              'last_updated': timestamp,
+          })
+
+      # Recompute summary
+      bundles_state = state['bundles']
+      state['summary'] = {
+          'total': len(bundles_state),
+          'converged': sum(1 for v in bundles_state.values() if v.get('status') == 'converged'),
+          'in_progress': sum(1 for v in bundles_state.values() if v.get('status') == 'in_progress'),
+          'failed': sum(1 for v in bundles_state.values() if v.get('status') == 'failed'),
+          'last_factory_run': timestamp,
+      }
+
+      # Write back
+      os.makedirs(os.path.dirname(state_path), exist_ok=True)
+      with open(state_path, 'w') as f:
+          yaml.dump(state, f, default_flow_style=False, sort_keys=False)
+
+      print(json.dumps({'updated': True, 'summary': state['summary']}))
+      "
+    output: "state_update"
+    parse_json: true
