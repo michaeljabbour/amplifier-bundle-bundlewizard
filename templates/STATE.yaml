@@ -1,0 +1,48 @@
+# Bundlewizard Factory State
+# Copied into the working directory at the start of a factory run.
+# Updated by agents after each stage.
+
+session:
+  id: ""                    # Session ID (auto-populated)
+  started: ""               # ISO 8601 timestamp
+  path: ""                  # "create_new" or "improve_existing"
+  tier: ""                  # "behavior" | "bundle" | "application_bundle"
+  target: ""                # Bundle name (create) or path (improve)
+
+stages:
+  explore:
+    status: pending          # pending | in_progress | completed | skipped
+    completed_at: ""
+    notes: ""
+  spec:
+    status: pending
+    completed_at: ""
+    spec_path: ""            # Path to bundle-spec.md
+  plan:
+    status: pending
+    completed_at: ""
+    plan_path: ""            # Path to implementation plan
+  execute:
+    status: pending
+    completed_at: ""
+    iterations: 0
+    best_score: 0.0
+    converged: false
+  verify:
+    status: pending
+    completed_at: ""
+    level_1: ""              # PASS | FAIL
+    level_2: 0.0
+    level_3: 0.0
+  finish:
+    status: pending
+    completed_at: ""
+    delivery: ""             # merge | pr | keep | discard
+
+convergence:
+  current_iteration: 0
+  max_iterations: 10
+  patience_limit: 3
+  patience_counter: 0
+  best_checkpoint: ""        # Path to best-so-far artifacts
+  history: []                # List of {iteration, level_1, level_2, level_3, notes}
