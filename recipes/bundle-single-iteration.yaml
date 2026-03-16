@@ -1,0 +1,213 @@
+# Bundle Single Iteration
+# The innermost sub-recipe — one generate/critique/refine/evaluate cycle.
+#
+# This is called repeatedly by bundle-refinement-loop.yaml until convergence.
+# Each iteration runs the four-agent pipeline:
+#   generator → critic → refiner (conditional) → evaluator
+#
+# Refinement decision logic:
+#   - Critique says "NEEDS CHANGES" → refiner runs, applies targeted fixes
+#   - Critique says "APPROVED"      → refiner is skipped, evaluator runs directly
+#
+# The evaluator returns a JSON object that the refinement loop reads to decide
+# whether to stop (converged == "true") or iterate again.
+#
+# Usage (via bundle-refinement-loop.yaml — not meant for direct invocation):
+#   Not meant to be invoked directly. Invoked as a sub-recipe.
+
+name: "bundle-single-iteration"
+description: "One generate/critique/refine/evaluate cycle for bundle convergence"
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "generation", "critique", "refinement", "evaluation", "convergence"]
+
+context:
+  spec_path: ""         # Path to bundle specification document
+  plan_path: ""         # Path to implementation plan document
+  output_path: ""       # Where to write generated bundle artifacts
+  iteration: "1"        # Current iteration number (passed from refinement loop)
+  previous_critique: "" # Critique from prior iteration (empty on first pass)
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Step 1: Generate
+  # bundle-generator produces bundle artifacts from spec + plan.
+  # On iteration > 1, incorporates the previous critique as refinement guidance.
+  # ---------------------------------------------------------------------------
+  - id: "generate"
+    agent: "bundlewizard:bundle-generator"
+    prompt: |
+      Generate bundle artifacts for this iteration.
+
+      SPEC: {{spec_path}}
+      PLAN: {{plan_path}}
+      OUTPUT PATH: {{output_path}}
+      ITERATION: {{iteration}}
+
+      {{#if previous_critique}}
+      PREVIOUS CRITIQUE (apply these refinements):
+      {{previous_critique}}
+
+      This is a refinement iteration. Apply the critic's feedback precisely.
+      Fix ONLY the issues identified — no scope creep. Preserve everything
+      the critic did not flag.
+      {{else}}
+      This is the first iteration. Generate all bundle artifacts from the spec and plan.
+      Follow these rules strictly:
+      - Thin bundle pattern: bundle.md ≤20 lines frontmatter, no @mentions in body
+      - Context sink discipline: heavy content in agent @mentions, not root session
+      - Agent descriptions: WHY/WHEN/WHAT/HOW with <example> blocks
+      - One agent per file, one behavior per concern
+      {{/if}}
+
+      Read the spec and plan documents. Produce all required bundle artifacts:
+      - bundle.md — thin entry point
+      - behaviors/*.yaml — behavior wiring
+      - agents/*.md — agent definitions
+      - context/*.md — knowledge files
+      - modes/*.md — mode definitions (if application bundle)
+      - recipes/*.yaml — recipe definitions (if applicable)
+      - Any other files from the spec
+
+      Write artifacts to {{output_path}}.
+      Return a summary of what was generated and key design decisions.
+    output: "generated"
+    timeout: 600
+
+  # ---------------------------------------------------------------------------
+  # Step 2: Critique
+  # bundle-critic independently reviews the generated artifacts against the spec.
+  # Spawned with context_depth="none" for fresh perspective — no shared context
+  # with the generator.
+  # Produces actionable feedback — either APPROVED or NEEDS CHANGES with specifics.
+  # ---------------------------------------------------------------------------
+  - id: "critique"
+    agent: "bundlewizard:bundle-critic"
+    prompt: |
+      Review the generated bundle artifacts against the specification.
+
+      SPEC: {{spec_path}}
+      OUTPUT PATH: {{output_path}}
+      ITERATION: {{iteration}}
+
+      GENERATED ARTIFACT SUMMARY:
+      {{generated}}
+
+      Read the actual generated files at {{output_path}}.
+      Review against all three convergence levels:
+
+      Level 1 (Structural):
+      1. Does bundle.md frontmatter parse as valid YAML?
+      2. Do all agent references in behavior YAML have corresponding files?
+      3. Are all source URIs syntactically valid?
+      4. Is any context file loaded BOTH at root level AND @mentioned by agents?
+      5. Are mode files in the correct path?
+
+      Level 2 (Philosophical):
+      1. Thin bundle pattern — bundle.md ≤20 lines frontmatter? No @mentions in body?
+      2. Context sink discipline — root context ≤2 files? Agents @mention only what they need?
+      3. Agent description quality — every agent has WHY/WHEN/WHAT/HOW? 2+ examples?
+      4. Composition hygiene — no circular includes? Sources pinned? One behavior per concern?
+
+      Level 3 (Functional):
+      1. Does the bundle achieve its stated purpose (from the spec)?
+      2. Are there broken paths or missing capabilities?
+
+      Delegate to foundation:foundation-expert when uncertain about composition rules.
+
+      End your review with exactly one of:
+      - "VERDICT: APPROVED" — bundle meets all convergence criteria
+      - "VERDICT: NEEDS CHANGES — [list specific issues by level and file]"
+    output: "critique"
+    timeout: 600
+
+  # ---------------------------------------------------------------------------
+  # Step 3: Refine
+  # bundle-refiner applies the critic's feedback.
+  # Conditional: only runs if critique contains "NEEDS CHANGES".
+  # ---------------------------------------------------------------------------
+  - id: "refine"
+    condition: "{{critique}} contains 'NEEDS CHANGES'"
+    agent: "bundlewizard:bundle-refiner"
+    prompt: |
+      Apply the critic's feedback to improve the bundle artifacts.
+
+      SPEC: {{spec_path}}
+      OUTPUT PATH: {{output_path}}
+      ITERATION: {{iteration}}
+
+      CRITIC FEEDBACK:
+      {{critique}}
+
+      ORIGINAL GENERATION:
+      {{generated}}
+
+      Apply targeted fixes:
+      - For Level 1 (structural) issues: fix YAML, add missing files, correct URIs
+      - For Level 2 (philosophical) issues: fix pattern violations, improve descriptions
+      - For Level 3 (functional) issues: add missing capabilities, fix broken paths
+
+      Fix ONLY the issues identified. Do not change parts that were not critiqued.
+      Do not add features. Do not restructure. Do not "improve" unflagged content.
+      Write updated artifacts to {{output_path}}.
+      Return a summary of all changes made and why.
+    output: "refined"
+    timeout: 600
+
+  # ---------------------------------------------------------------------------
+  # Step 4: Assess
+  # bundle-evaluator independently scores all three convergence levels.
+  # Returns convergence JSON so the refinement loop can decide whether to stop.
+  # ---------------------------------------------------------------------------
+  - id: "assess"
+    agent: "bundlewizard:bundle-evaluator"
+    prompt: |
+      Evaluate the bundle and score all three convergence levels.
+
+      SPEC: {{spec_path}}
+      OUTPUT PATH: {{output_path}}
+      ITERATION: {{iteration}}
+
+      CRITIQUE FROM THIS ITERATION:
+      {{critique}}
+
+      {{#if refined}}
+      REFINEMENT SUMMARY:
+      {{refined}}
+      {{/if}}
+
+      Run three-level evaluation against the bundle at {{output_path}}:
+
+      Level 1 (Structural): Check each pass/fail gate.
+      - Bundle loads? Agent references resolve? URIs valid?
+      - No duplicate context? Mode files discoverable?
+
+      Level 2 (Philosophical): Score each criterion (0.0-1.0).
+      - Thin bundle pattern (25%)
+      - Context sink discipline (25%)
+      - Agent description quality (25%)
+      - Composition hygiene (25%)
+      - Weighted score must be ≥ 0.85 to pass.
+
+      Level 3 (Functional): Score domain-specific fitness (0.0-1.0).
+      - Does the bundle achieve its stated purpose?
+      - Score must be ≥ 0.80 to pass.
+
+      Convergence formula:
+        converged = (level_1 == PASS) AND (level_2 >= 0.85) AND (level_3 >= 0.80)
+
+      Return ONLY a JSON object with this exact structure:
+      {
+        "converged": "true" or "false",
+        "level_1": "PASS" or "FAIL",
+        "level_2_score": "X.XX",
+        "level_3_score": "X.XX",
+        "iteration": "N",
+        "best_so_far": "path/to/output"
+      }
+
+      Set converged="true" ONLY if all three levels pass their thresholds.
+      Set best_so_far to the output_path if this is the best result so far.
+    output: "assessment"
+    parse_json: true
+    timeout: 600
