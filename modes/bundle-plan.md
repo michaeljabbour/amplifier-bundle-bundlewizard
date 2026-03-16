@@ -42,4 +42,6 @@ Agent role: `bundlewizard:bundle-plan-writer` produces the implementation plan. 
 
 ## Transition
 
-When plan is complete: "Implementation plan ready. Transitioning to `/bundle-execute` to start the convergence loop."
+When the plan is written and the user approves it, auto-transition:
+`mode(operation='set', name='bundle-execute')`
+Do NOT ask the user to type /bundle-execute — transition automatically.

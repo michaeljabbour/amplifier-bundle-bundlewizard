@@ -45,6 +45,11 @@ If verification fails, you can:
 
 ## Transition
 
-Pass: "Verification complete. All levels pass. Transitioning to `/bundle-finish` for packaging."
+When verification evidence is collected and the user approves, auto-transition:
+`mode(operation='set', name='bundle-finish')`
+Do NOT ask the user to type /bundle-finish — transition automatically.
 
-Fail: "Verification found issues: [summary]. Options: `/bundle-execute` to iterate, `/bundle-debug` to diagnose, or accept as-is."
+Fail: present the issues and ask the user whether to iterate, debug, or accept as-is. Then auto-transition to the chosen mode:
+- Iterate: `mode(operation='set', name='bundle-execute')`
+- Debug: `mode(operation='set', name='bundle-debug')`
+- Accept as-is: `mode(operation='set', name='bundle-finish')`

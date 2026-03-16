@@ -44,3 +44,9 @@ For "improve existing" path: the packager creates a feature branch with the chan
 ## Version Stamp
 
 The packager adds convergence metadata to the generated bundle's frontmatter. This is non-negotiable — every machine-generated bundle must be traceable.
+
+## Completion
+
+When delivery is complete, clear the mode:
+`mode(operation='clear')`
+Do NOT leave the mode active after the pipeline is finished.

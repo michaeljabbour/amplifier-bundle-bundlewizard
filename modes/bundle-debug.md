@@ -49,4 +49,12 @@ Debug can transition to ANY mode — it's the universal off-ramp and on-ramp.
 
 ## Transition
 
-After diagnosis: "Root cause: [description]. Recommend returning to `/bundle-[mode]` to fix: [specific fix]."
+After diagnosis, do NOT tell the user to type a mode command. Present the findings and recommended fix, then confirm with the user and auto-transition to the appropriate mode:
+`mode(operation='set', name='<mode>')`
+
+Examples:
+- Return to execute: `mode(operation='set', name='bundle-execute')`
+- Return to spec: `mode(operation='set', name='bundle-spec')`
+- Return to verify: `mode(operation='set', name='bundle-verify')`
+
+Always confirm the destination with the user before transitioning — debug is the one mode where the next step depends on what was found.

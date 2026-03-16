@@ -57,6 +57,8 @@ For each iteration:
 
 ## Transition
 
-When converged: "Convergence achieved (Level 1: PASS, Level 2: X.XX, Level 3: X.XX). Transitioning to `/bundle-verify` for independent verification."
+When the convergence loop completes (converged or patience exhausted), auto-transition:
+`mode(operation='set', name='bundle-verify')`
+Do NOT ask the user to type /bundle-verify — transition automatically.
 
-When stalled: "Convergence stalled after N iterations (best score: X.XX). Diagnose with `/bundle-debug` or accept best-so-far with `/bundle-verify`."
+When stalled: inform the user of the stall (best score, iterations), then auto-transition to bundle-verify unless the user explicitly requests bundle-debug first.

@@ -81,4 +81,6 @@ Never ask "are you experienced?" — detect and adapt.
 
 ## Transition
 
-When exploration is complete: "Ready to design the bundle specification. Transitioning to `/bundle-spec`."
+When exploration is complete and the user has confirmed the summary, auto-transition:
+`mode(operation='set', name='bundle-spec')`
+Do NOT ask the user to type /bundle-spec — transition automatically.

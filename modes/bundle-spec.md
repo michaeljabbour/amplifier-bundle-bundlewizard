@@ -56,6 +56,9 @@ Do NOT delegate to the spec-writer until you have discussed:
 
 ## Transition
 
-When spec is complete: "Specification ready. Transitioning to `/bundle-plan` for task breakdown."
+When the spec is written and the user approves it, auto-transition:
+`mode(operation='set', name='bundle-plan')`
+Do NOT ask the user to type /bundle-plan — transition automatically.
 
-Can also go back: "Need to revisit the interview? Transitioning to `/bundle-explore`."
+Can also go back: if the user wants to revisit the interview, auto-transition:
+`mode(operation='set', name='bundle-explore')`
