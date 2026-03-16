@@ -1,0 +1,45 @@
+bundle:
+  name: bundlewizard-behavior
+  version: 0.1.0
+  description: |
+    Core behavior for bundlewizard. Mounts the modes system, registers all
+    agents, loads skills, and includes root-level context.
+
+includes:
+  - bundle: git+https://github.com/microsoft/amplifier-bundle-modes@main#subdirectory=behaviors/modes.yaml
+
+hooks:
+  - module: hooks-mode
+    source: git+https://github.com/microsoft/amplifier-bundle-modes@main#subdirectory=modules/hooks-mode
+    config:
+      search_paths:
+        - "@bundlewizard:modes"
+
+tools:
+  - module: tool-mode
+    source: git+https://github.com/microsoft/amplifier-bundle-modes@main#subdirectory=modules/tool-mode
+    config:
+      gate_policy: "warn"
+  - module: tool-skills
+    source: git+https://github.com/microsoft/amplifier-module-tool-skills@main
+    config:
+      skills:
+        - "@bundlewizard:skills"
+
+agents:
+  include:
+    - bundlewizard:agents/bundle-explorer
+    - bundlewizard:agents/bundle-auditor
+    - bundlewizard:agents/ecosystem-scout
+    - bundlewizard:agents/bundle-spec-writer
+    - bundlewizard:agents/bundle-plan-writer
+    - bundlewizard:agents/bundle-generator
+    - bundlewizard:agents/bundle-critic
+    - bundlewizard:agents/bundle-refiner
+    - bundlewizard:agents/bundle-evaluator
+    - bundlewizard:agents/bundle-packager
+
+context:
+  include:
+    - bundlewizard:context/instructions.md
+    - bundlewizard:context/philosophy.md
