@@ -1,0 +1,64 @@
+# Bundle Refinement Loop
+# While-loop convergence wrapper around bundle-single-iteration.yaml.
+#
+# Implements the generate → critique → refine → evaluate convergence loop
+# from the factory pattern (same pattern as harness-refinement-loop).
+#
+# Loop mechanics:
+#   - Iterates bundle-single-iteration.yaml until converged == 'true'
+#   - max 10 iterations (bundles converge faster than constraints — typically 2-5 passes)
+#   - Saves best-so-far on each iteration (checkpoint_best)
+#   - On timeout: returns best achieved (do not fail — 95% is better than nothing)
+#
+# Why 10 max instead of harness-machine's 60:
+#   Bundle artifacts are compositional (YAML, markdown, file structure).
+#   Issues are pattern violations and missing content, not algorithmic edge cases.
+#   If a bundle hasn't converged in 10 iterations, the spec needs revision, not more iterations.
+#
+# Usage (via bundle-development-cycle.yaml — not for direct invocation):
+#   amplifier run "execute bundlewizard:recipes/bundle-refinement-loop.yaml
+#     with spec_path=output/bundle-spec.md plan_path=output/bundle-plan.md
+#     output_path=output/bundle"
+
+name: "bundle-refinement-loop"
+description: "While-loop convergence wrapper — iterates single-iteration until three-level convergence is met"
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "convergence", "while-loop", "refinement", "factory-pattern"]
+
+context:
+  spec_path: ""      # Required: Path to bundle specification document
+  plan_path: ""      # Required: Path to implementation plan document
+  output_path: ""    # Required: Where to write generated bundle artifacts
+  converged: "false" # Loop control — updated by sub-recipe assessment result
+  iteration: "0"     # Current iteration counter — updated each cycle
+
+steps:
+  # ---------------------------------------------------------------------------
+  # Convergence Loop
+  # Repeatedly invokes bundle-single-iteration.yaml until the evaluator signals
+  # convergence (all three levels pass) or max iterations is reached.
+  #
+  # Context updates each cycle from the sub-recipe's assessment JSON output:
+  #   converged  ← assessment.converged
+  #   iteration  ← assessment.iteration
+  # ---------------------------------------------------------------------------
+  - id: "refinement-cycle"
+    type: recipe
+    recipe: "bundlewizard:recipes/bundle-single-iteration.yaml"
+    context:
+      spec_path: "{{spec_path}}"
+      plan_path: "{{plan_path}}"
+      output_path: "{{output_path}}"
+      iteration: "{{iteration}}"
+      previous_critique: "{{critique}}"
+    while_condition: "{{converged}} != 'true'"
+    max_while_iterations: 10
+    break_when: "{{converged}} == 'true'"
+    update_context:
+      converged: "{{assessment.converged}}"
+      iteration: "{{assessment.iteration}}"
+    checkpoint_best: true
+    timeout: 3600
+    on_error: "continue"
+    on_timeout: "return_best"
