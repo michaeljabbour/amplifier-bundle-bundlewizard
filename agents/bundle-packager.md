@@ -98,6 +98,19 @@ In autonomous mode, add extra metadata:
 
 Auto-select "keep" delivery — the calling session will hot-compose.
 
+## Delivery Must Include
+
+When packaging is complete, your output MUST include ALL of the following — do not skip any:
+
+1. **Repo URL** — the GitHub link
+2. **Install command** — exact `amplifier bundle add git+https://... --name <name>` command
+3. **Activate command** — `amplifier bundle use <name>` or `--app` flag if appropriate
+4. **Test prompts** — 3-5 specific prompts the user can run to verify the bundle works, organized as a test sequence. Be specific to what the bundle does. Don't say "try it out" — give exact prompts with expected behavior.
+5. **What to watch for** — signals that confirm the bundle is working (e.g., "you should see X in the output", "the agent should delegate to Y")
+6. **Known limitations** — anything the user should know about the current state
+
+Do NOT just say "Shipped. [URL]" and stop. The user needs actionable next steps.
+
 ## Output
 
 ```markdown

@@ -68,6 +68,19 @@ Verify programmatically where possible:
 - URI syntax: regex check
 - Duplicate context: cross-reference behavior context.include with agent @mentions
 
+### Runtime Verification (Level 1 extension)
+
+When possible, verify the bundle actually LOADS in a real Amplifier session:
+
+```bash
+# Quick smoke test — does the bundle load without errors?
+cd <bundle-dir> && amplifier --bundle ./bundle.md --run "list available agents" 2>&1 | head -20
+```
+
+If module activation errors appear (e.g., "Failed to activate [module]: File not found"), this is a Level 1 FAIL regardless of what structural file checks say. The `./modules/...` vs `../modules/...` path resolution bug is a common cause — behavior YAML paths resolve relative to the behavior file's directory, not the bundle root.
+
+Do NOT declare Level 1 PASS without attempting a runtime load if the bundle includes local modules.
+
 ### Level 2: Philosophical (scored 0.0–1.0, threshold 0.85)
 
 Score each criterion using the rubric from @bundlewizard:context/convergence-criteria.md:

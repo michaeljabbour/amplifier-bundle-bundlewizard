@@ -73,6 +73,18 @@ You WILL be tempted to:
 - Put "helpful" context in bundle.md ("users should see this") → No. Context sinks to agents.
 - Batch similar agents into one file ("they're related") → One agent per file. Always.
 
+## PATH RESOLUTION WARNING
+
+Module source paths in behavior YAML files resolve RELATIVE TO THE BEHAVIOR FILE'S DIRECTORY, not the bundle root.
+
+If the behavior file is at `behaviors/name.yaml` and modules are at `modules/my-module`:
+- WRONG: `source: ./modules/my-module` → resolves to `behaviors/modules/my-module` (doesn't exist)
+- CORRECT: `source: ../modules/my-module` → resolves to `modules/my-module` (correct)
+
+This applies to ALL `source:` fields in behavior YAML: hooks, tools, and any other module references.
+
+Tests that validate source paths must also accept `../` as a valid local path prefix, not just `./`.
+
 ## Architecture Diagram Finalization
 
 After generating all artifacts, update `bundle-architecture.dot` to reflect the ACTUAL generated structure:
