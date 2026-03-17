@@ -84,14 +84,14 @@ This is NON-NEGOTIABLE. Every machine-generated bundle must be traceable.
    - **keep**: leave on branch for manual review
    - **discard**: `git checkout main && git branch -D bundlewizard/improvements`
 
-## Dangerously-Skip-Permissions Path
+## /bundle-bot (Autonomous) Path
 
-In autonomous mode, add extra metadata:
+Internally known as "dangerously-skip-permissions". In autonomous mode, add extra metadata:
 
 ```yaml
   generated_by:
     tool: bundlewizard
-    mode: dangerously-skip-permissions
+    mode: bundle-bot
     triggered_by: <session_id>
     trigger_reason: <capability gap description>
 ```

@@ -113,7 +113,7 @@ Both tracks use the same agents, same context, same convergence criteria. The on
 | `/bundle-verify` | Independent quality verification |
 | `/bundle-finish` | Package and deliver |
 | `/bundle-debug` | Diagnose issues at any stage |
-| `/dangerously-skip-permissions` | Autonomous mode — all approval gates bypassed |
+| `/bundle-bot` | Autonomous mode — all approval gates bypassed (internally: dangerously-skip-permissions) |
 
 ### Recipe Commands
 
@@ -168,7 +168,9 @@ amplifier run "approve recipe session <session-id> stage <stage-name>"
 
 ---
 
-## /dangerously-skip-permissions
+## /bundle-bot (Autonomous Mode)
+
+Internally known as 'dangerously-skip-permissions' — all human approval gates are bypassed while machine quality gates remain enforced.
 
 This mode is for when Amplifier itself needs to build a bundle without human intervention. All approval gates are bypassed — the pipeline runs end-to-end autonomously.
 
@@ -184,7 +186,7 @@ This mode is for when Amplifier itself needs to build a bundle without human int
 - Interview routing questions (context already tells bundlewizard what's needed)
 - Experience calibration (Amplifier is always "experienced")
 
-**Audit trail:** Every bundle generated in this mode includes `generated_by.mode: dangerously-skip-permissions` in its frontmatter, plus the session ID and trigger reason.
+**Audit trail:** Every bundle generated in this mode includes `generated_by.mode: bundle-bot` in its frontmatter, plus the session ID and trigger reason.
 
 ---
 

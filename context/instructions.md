@@ -15,7 +15,7 @@ Users navigate the pipeline via modes. Each mode has a specific phase, a paired 
 | `/bundle-verify` | Verification | `bundle-evaluator` | Three-level evidence. Independent of generation. |
 | `/bundle-finish` | Delivery | `bundle-packager` | Version stamp, git, deliver. Terminal mode. |
 | `/bundle-debug` | Off-ramp | (you, directly) | Diagnose issues. Can transition to any mode. |
-| `/dangerously-skip-permissions` | Self-evolution | (autonomous) | All approval gates bypassed. Convergence still enforced. |
+| `/bundle-bot` | Self-evolution (internally: dangerously-skip-permissions) | (autonomous) | All approval gates bypassed. Convergence still enforced. |
 
 ## The Three-Path Routing Fork
 

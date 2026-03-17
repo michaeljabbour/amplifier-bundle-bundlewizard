@@ -1,8 +1,8 @@
 ---
 mode:
-  name: dangerously-skip-permissions
-  description: Autonomous bundle generation — all approval gates bypassed, convergence still enforced
-  shortcut: dangerously-skip-permissions
+  name: bundle-bot
+  description: Autonomous bundle generation (internally: dangerously-skip-permissions). All human approval gates bypassed; machine quality gates still enforced.
+  shortcut: bundle-bot
 
   tools:
     safe:
@@ -24,7 +24,9 @@ mode:
   allow_clear: true
 ---
 
-DANGEROUSLY-SKIP-PERMISSIONS MODE: Autonomous self-evolution.
+BUNDLE-BOT MODE: Autonomous self-evolution.
+
+> **Internal concept:** This mode implements what is internally called "dangerously-skip-permissions" — all human approval gates are bypassed while machine quality gates remain fully enforced. The user-facing name and shortcut is `/bundle-bot`.
 
 <CRITICAL>
 This mode is for when Amplifier itself needs to build a bundle without human approval gates. The convergence loop STILL RUNS. Quality gates are NOT skipped — only human checkpoints are.
@@ -55,7 +57,7 @@ Every bundle generated in this mode MUST include:
 ```yaml
 generated_by:
   tool: bundlewizard
-  mode: dangerously-skip-permissions
+  mode: bundle-bot
   triggered_by: <session_id>
   trigger_reason: <capability gap description>
   convergence:

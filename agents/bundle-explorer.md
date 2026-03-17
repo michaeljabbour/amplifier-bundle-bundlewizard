@@ -34,7 +34,7 @@ meta:
     </example>
 
     <example>
-    Context: Amplifier detects a capability gap (dangerously-skip-permissions mode)
+    Context: Amplifier detects a capability gap (bundle-bot mode — internally: dangerously-skip-permissions)
     user: "[system] Capability gap detected: no agent handles Terraform module analysis"
     assistant: "Delegating to bundlewizard:bundle-explorer with pre-seeded context about the Terraform gap."
     <commentary>

@@ -44,7 +44,7 @@ Both tracks produce the same artifact. The recipe just automates mode transition
 | Verify | `/bundle-verify` | Independent three-level convergence assessment | bundle-evaluator agent | read_file: safe, bash: safe, write: warn |
 | Finish | `/bundle-finish` | Version stamp, git, deliver the artifact | bundle-packager agent | read_file: safe, bash: safe, write: safe |
 | Debug | `/bundle-debug` | Diagnose issues at any pipeline stage | main agent (you) | read_file: safe, bash: safe, write: BLOCKED |
-| Skip Permissions | `/dangerously-skip-permissions` | Autonomous self-evolution — all approval gates bypassed | autonomous | everything: safe/allow |
+| Skip Permissions | `/bundle-bot` | Autonomous self-evolution — all approval gates bypassed (internally: dangerously-skip-permissions) | autonomous | everything: safe/allow |
 
 **Mode transition graph (allowed_transitions):**
 
@@ -57,7 +57,7 @@ Both tracks produce the same artifact. The recipe just automates mode transition
 | bundle-verify | bundle-finish, bundle-debug, bundle-execute |
 | bundle-finish | (none — terminal mode, `allow_clear: true`) |
 | bundle-debug | bundle-explore, bundle-spec, bundle-plan, bundle-execute, bundle-verify, bundle-finish |
-| dangerously-skip-permissions | all modes, `allow_clear: true` |
+| bundle-bot | all modes, `allow_clear: true` |
 
 ---
 
