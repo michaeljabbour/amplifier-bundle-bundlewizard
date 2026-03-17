@@ -135,3 +135,14 @@ Write the spec document to the working directory:
 - Level 2: [expected philosophical score targets]
 - Level 3: [functional criteria specific to this domain]
 ```
+
+## Architecture Diagram Refinement
+
+Read the `bundle-architecture.dot` produced by the explorer. Refine it to reflect the spec:
+- Replace placeholder names with exact agent/file names from the spec
+- Add context sink relationships (which agents @mention which context files)
+- Add module source URIs as node labels
+- Update delegation edges to match the expert delegation table in the spec
+- Add convergence loop subgraph if applicable
+
+Write the updated DOT file back to the output directory, overwriting the explorer's version.

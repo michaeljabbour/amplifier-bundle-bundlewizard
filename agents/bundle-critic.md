@@ -74,6 +74,16 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 - [ ] Mode tool permissions make sense for the mode's purpose
 - [ ] Recipe references match actual agent and mode names
 
+### Architecture Diagram Validation
+
+- [ ] `bundle-architecture.dot` exists and is valid DOT syntax
+- [ ] Every node in the diagram has a corresponding file in the bundle
+- [ ] Every file in the bundle has a corresponding node in the diagram
+- [ ] Delegation edges match actual agent delegation instructions
+- [ ] Context @mention edges match actual @mentions in agent files
+- [ ] Mode transition edges match actual allowed_transitions in mode files
+- [ ] No orphaned nodes (files not connected to anything)
+
 ## Delegation
 
 When uncertain about a composition rule: delegate to `foundation:foundation-expert`. Don't guess.

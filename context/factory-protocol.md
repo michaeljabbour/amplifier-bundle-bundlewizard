@@ -21,6 +21,21 @@ Every factory follows this stage sequence. Domain-specific factories fill each s
 | Finish | `packager` | `bundle-packager` | Version stamp, package, deliver |
 | Debug | (none) | (user-directed) | Off-ramp for issues at any stage |
 
+
+## Architecture Diagram as Visual Contract
+
+Every factory produces an evolving `bundle-architecture.dot` file:
+
+| Stage | DOT Action |
+|-------|-----------|
+| Explore | Create initial diagram from user requirements |
+| Spec | Refine with exact names, relationships, sources |
+| Plan | Update if planning changes the architecture |
+| Execute | Finalize to match actual generated artifacts |
+| Verify | Critic validates artifacts against the diagram |
+
+The diagram serves as a visual contract — a single artifact that everyone can point to and say "this is what we're building." Discrepancies between the diagram and the artifacts are bugs.
+
 The Execute stage contains the **convergence loop**: generator → critic → refiner → evaluator, repeated until convergence criteria are met or patience exhausts.
 
 ## Convergence Loop Protocol

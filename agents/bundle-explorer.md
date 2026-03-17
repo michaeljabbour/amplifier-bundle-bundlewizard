@@ -141,6 +141,49 @@ Detect passively from how the user communicates. NEVER ask "are you experienced?
 | Rebuild path chosen | `bundlewizard:bundle-auditor` | Analyze reference artifact — what to keep, what to leave behind |
 | Need ecosystem knowledge | `amplifier:amplifier-expert` | "What modules exist for X?" |
 
+## Architecture Diagram
+
+At the end of exploration, produce a `bundle-architecture.dot` file that visually represents:
+- The bundle's composition (what includes what)
+- Agent relationships (who delegates to whom)
+- Data/context flow (what @mentions what)
+- Mode pipeline (transition graph)
+- External dependencies (expert delegations, module sources)
+
+This is a DOT language file (Graphviz). It serves as a visual contract — every subsequent phase refines it, and the critic validates against it.
+
+Write the DOT file to the output directory alongside other exploration artifacts.
+
+Example structure:
+```dot
+digraph bundle_name {
+  rankdir=TB;
+  node [shape=box, style=rounded];
+  
+  // Composition
+  subgraph cluster_bundle {
+    label="bundle.md";
+    behavior [label="behaviors/name.yaml"];
+  }
+  
+  // Agents
+  subgraph cluster_agents {
+    label="Agents";
+    agent1; agent2; agent3;
+  }
+  
+  // Delegation flow
+  agent1 -> agent2 [label="delegates"];
+  agent1 -> "foundation:foundation-expert" [style=dashed, label="domain knowledge"];
+  
+  // Mode transitions
+  subgraph cluster_modes {
+    label="Mode Pipeline";
+    mode1 -> mode2 -> mode3;
+  }
+}
+```
+
 ## Output
 
 When the interview is complete, produce a summary:

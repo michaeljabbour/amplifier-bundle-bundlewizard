@@ -90,6 +90,15 @@ For generating multiple bundles:
 - Per-target overrides
 - STATE.yaml template configuration
 
+## Architecture Diagram Update
+
+Read the `bundle-architecture.dot` refined by the spec-writer. Update if the plan reveals:
+- Additional files not in the spec
+- Changed dependency order
+- Structural decisions made during planning
+
+Only modify the DOT if planning actually changes the architecture. If the spec's DOT is accurate, leave it unchanged.
+
 ## Output
 
 Write the plan to the working directory. Use checkbox (`- [ ]`) syntax for each step so agents can track progress.

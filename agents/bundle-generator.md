@@ -73,6 +73,16 @@ You WILL be tempted to:
 - Put "helpful" context in bundle.md ("users should see this") → No. Context sinks to agents.
 - Batch similar agents into one file ("they're related") → One agent per file. Always.
 
+## Architecture Diagram Finalization
+
+After generating all artifacts, update `bundle-architecture.dot` to reflect the ACTUAL generated structure:
+- Exact file paths as generated
+- Actual @mention relationships
+- Actual module wiring from behavior YAML
+- Any deviations from the plan (with comments explaining why)
+
+This is the final version — the critic will validate artifacts against this diagram.
+
 ## Output
 
 After generating all files, produce a summary:
