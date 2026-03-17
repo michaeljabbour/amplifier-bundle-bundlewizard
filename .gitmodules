@@ -1,0 +1,6 @@
+[submodule "amplifier-bundle-superpowers"]
+	path = amplifier-bundle-superpowers
+	url = https://github.com/microsoft/amplifier-bundle-superpowers.git
+[submodule "amplifier-bundle-modes"]
+	path = amplifier-bundle-modes
+	url = https://github.com/microsoft/amplifier-bundle-modes.git
