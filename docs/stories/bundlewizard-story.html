@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>bundlewizard — The Machine That Makes Machines</title>
+    <style>
+        :root {
+            /* Accent: Hot Pink / Magenta — factory energy */
+            --accent: #FF375F;
+            --accent-dim: rgba(255, 55, 95, 0.15);
+            --accent-glow: rgba(255, 55, 95, 0.25);
+
+            /* Typography scale */
+            --fs-hero: clamp(36px, 10vw, 72px);
+            --fs-h1: clamp(28px, 6vw, 48px);
+            --fs-h2: clamp(22px, 4vw, 32px);
+            --fs-h3: clamp(18px, 3vw, 24px);
+            --fs-body: clamp(14px, 2vw, 16px);
+            --fs-small: clamp(12px, 1.8vw, 14px);
+            --fs-code: clamp(12px, 1.6vw, 15px);
+
+            /* Spacing scale */
+            --space-xs: clamp(8px, 1.5vw, 12px);
+            --space-sm: clamp(12px, 2vw, 16px);
+            --space-md: clamp(16px, 3vw, 24px);
+            --space-lg: clamp(24px, 4vw, 40px);
+            --space-xl: clamp(32px, 6vw, 60px);
+
+            /* Surfaces */
+            --surface-1: rgba(255,255,255,0.06);
+            --surface-2: rgba(255,255,255,0.10);
+            --surface-3: rgba(255,255,255,0.15);
+            --border-subtle: rgba(255,255,255,0.12);
+            --border-visible: rgba(255,255,255,0.20);
+
+            /* Text hierarchy */
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255,255,255,0.7);
+            --text-tertiary: rgba(255,255,255,0.5);
+
+            /* Radii */
+            --radius-sm: clamp(8px, 1vw, 12px);
+            --radius-md: clamp(12px, 1.5vw, 16px);
+            --radius-lg: clamp(16px, 2vw, 24px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: var(--text-primary);
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        /* ── Slides ── */
+        .slide {
+            display: none;
+            width: 100vw;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(60px, 10vw, 120px) clamp(20px, 5vw, 80px) clamp(80px, 12vw, 100px);
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .slide.active { display: flex; }
+        .slide.center {
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ── Typography ── */
+        .section-label {
+            font-size: var(--fs-small);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: var(--space-sm);
+        }
+        .headline {
+            font-size: var(--fs-hero);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: var(--space-md);
+        }
+        .medium-headline {
+            font-size: var(--fs-h1);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            margin-bottom: var(--space-md);
+        }
+        .sub-headline {
+            font-size: var(--fs-h2);
+            font-weight: 600;
+            line-height: 1.25;
+            margin-bottom: var(--space-sm);
+        }
+        .subhead {
+            font-size: var(--fs-h3);
+            color: var(--text-secondary);
+            line-height: 1.4;
+            max-width: min(700px, 90vw);
+        }
+        .body-text {
+            font-size: var(--fs-body);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .small-text {
+            font-size: var(--fs-small);
+            color: var(--text-tertiary);
+        }
+
+        /* ── Grids ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+            gap: var(--space-md);
+            width: 100%;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+            gap: var(--space-md);
+            width: 100%;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+            gap: var(--space-sm);
+            width: 100%;
+        }
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+            gap: var(--space-sm);
+            width: 100%;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+        .card-accent {
+            background: var(--accent-dim);
+            border: 1px solid rgba(255, 55, 95, 0.25);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+        .card-elevated {
+            background: var(--surface-2);
+            border: 1px solid var(--border-visible);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+        .card h3, .card h4, .card-accent h3, .card-accent h4,
+        .card-elevated h3, .card-elevated h4 {
+            color: var(--text-primary);
+            font-size: var(--fs-h3);
+            margin-bottom: var(--space-xs);
+        }
+        .card p, .card li, .card-accent p, .card-accent li,
+        .card-elevated p, .card-elevated li {
+            color: var(--text-secondary);
+            font-size: var(--fs-body);
+            line-height: 1.5;
+        }
+        .card .icon, .card-accent .icon, .card-elevated .icon {
+            font-size: clamp(28px, 5vw, 48px);
+            margin-bottom: var(--space-xs);
+        }
+
+        /* ── Code blocks ── */
+        .code-block {
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm) var(--space-md);
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: var(--fs-code);
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .code-green { color: #30D158; }
+        .code-blue { color: #64D2FF; }
+        .code-pink { color: var(--accent); }
+        .code-yellow { color: #FFD60A; }
+        .code-gray { color: var(--text-tertiary); }
+        .code-white { color: var(--text-primary); }
+
+        /* ── Pipeline ── */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-xs);
+            margin: var(--space-md) 0;
+        }
+        .pipeline-step {
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: var(--space-xs) var(--space-sm);
+            font-size: var(--fs-small);
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        .pipeline-step.accent {
+            background: var(--accent-dim);
+            border-color: rgba(255, 55, 95, 0.3);
+            color: var(--accent);
+        }
+        .pipeline-arrow {
+            color: var(--text-tertiary);
+            font-size: var(--fs-body);
+        }
+
+        /* ── Velocity stats ── */
+        .velocity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(140px, 45%), 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+            width: 100%;
+        }
+        .velocity-stat { text-align: center; }
+        .velocity-number {
+            font-size: clamp(40px, 10vw, 80px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent), #FF8A5C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .velocity-label {
+            font-size: var(--fs-small);
+            color: var(--text-secondary);
+            margin-top: var(--space-xs);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ── Badge ── */
+        .badge {
+            display: inline-block;
+            font-size: var(--fs-small);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-top: var(--space-sm);
+        }
+        .badge-active {
+            background: rgba(48, 209, 88, 0.15);
+            color: #30D158;
+            border: 1px solid rgba(48, 209, 88, 0.3);
+        }
+        .badge-broke {
+            background: rgba(255, 69, 58, 0.15);
+            color: #FF453A;
+            border: 1px solid rgba(255, 69, 58, 0.3);
+        }
+        .badge-fixed {
+            background: rgba(100, 210, 255, 0.15);
+            color: #64D2FF;
+            border: 1px solid rgba(100, 210, 255, 0.3);
+        }
+
+        /* ── Quote ── */
+        .quote {
+            font-size: var(--fs-h2);
+            font-style: italic;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--accent);
+            padding-left: var(--space-md);
+            margin: var(--space-md) 0;
+            max-width: min(800px, 95vw);
+        }
+
+        /* ── Comparison ── */
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+            gap: 2px;
+            width: 100%;
+            margin-top: var(--space-md);
+        }
+        .comparison-col {
+            background: var(--surface-2);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+        }
+        .comparison-col h4 {
+            color: var(--text-primary);
+            font-size: var(--fs-h3);
+            margin-bottom: var(--space-sm);
+        }
+        .comparison-col ul {
+            list-style: none;
+            padding: 0;
+        }
+        .comparison-col li {
+            color: var(--text-secondary);
+            font-size: var(--fs-body);
+            line-height: 1.6;
+            padding: 4px 0;
+        }
+        .comparison-col li::before {
+            margin-right: 8px;
+        }
+        .good li::before { content: "✓"; color: #30D158; }
+        .bad li::before { content: "✗"; color: #FF453A; }
+
+        /* ── Table ── */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: var(--space-md);
+        }
+        .data-table th {
+            color: var(--accent);
+            font-size: var(--fs-small);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--space-xs);
+            border-bottom: 1px solid var(--border-visible);
+        }
+        .data-table td {
+            color: var(--text-secondary);
+            font-size: var(--fs-body);
+            padding: var(--space-xs);
+            border-bottom: 1px solid var(--surface-1);
+        }
+
+        /* ── Convergence meter ── */
+        .meter-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: var(--space-xs);
+        }
+        .meter-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent), #30D158);
+        }
+
+        /* ── Navigation ── */
+        .nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            right: clamp(16px, 3vw, 30px);
+            font-size: var(--fs-small);
+            color: var(--text-tertiary);
+            z-index: 100;
+        }
+        .more-stories {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(11px, 1.5vw, 12px);
+            color: rgba(255,255,255,0.3);
+            text-decoration: none;
+            z-index: 100;
+        }
+        .more-stories:hover { color: rgba(255,255,255,0.5); }
+
+        /* ── Responsive ── */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .slide {
+                padding: 16px clamp(20px, 5vw, 80px) 60px;
+            }
+            .slide.center {
+                justify-content: flex-start;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .slide, .slide * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+        @media (hover: none) {
+            .nav-dot {
+                min-width: 16px;
+                min-height: 16px;
+            }
+        }
+
+        /* ── Phase tag ── */
+        .phase-tag {
+            display: inline-block;
+            font-size: var(--fs-small);
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-bottom: var(--space-xs);
+        }
+        .phase-1 { background: rgba(255, 55, 95, 0.15); color: var(--accent); }
+        .phase-2 { background: rgba(100, 210, 255, 0.15); color: #64D2FF; }
+        .phase-3 { background: rgba(48, 209, 88, 0.15); color: #30D158; }
+
+        /* ── Inline highlight ── */
+        .hl { color: var(--accent); font-weight: 600; }
+        .hl-green { color: #30D158; font-weight: 600; }
+        .hl-blue { color: #64D2FF; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SLIDE 1 — Title
+     ============================================================ -->
+<div class="slide active center">
+    <div class="section-label">Amplifier Ecosystem</div>
+    <h1 class="headline">bundlewizard</h1>
+    <p class="subhead">The machine that makes machines.</p>
+    <p class="subhead" style="margin-top: var(--space-xs);">An AI-powered bundle factory — from concept to working product in a single session.</p>
+    <div class="badge badge-active" style="margin-top: var(--space-md);">Active</div>
+    <div class="small-text" style="margin-top: var(--space-sm);">March 2026</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 2 — Architecture: DOT Visual Contract
+     ============================================================ -->
+<div class="slide center">
+    <div class="section-label">Act 1 · Visual Contract</div>
+    <h2 class="medium-headline">Architecture: DOT Visual Contract</h2>
+    <img src="dot-architecture.png" alt="DOT Architecture Diagram" style="max-width:min(720px, 90vw); border-radius:12px; margin: var(--space-md) 0;" />
+    <p class="subhead" style="margin-top: var(--space-md); max-width: min(800px, 95vw);">
+        Every bundle bundlewizard generates includes an evolving architecture diagram.
+        The explorer creates it, spec-writer refines it, generator finalizes it,
+        and the critic validates every node has a matching file.
+    </p>
+</div>
+
+<!-- ============================================================
+     SLIDE 3 — The Design Decision
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 2 · The Design</div>
+    <h2 class="medium-headline">Build new. Don't bolt on.</h2>
+    <p class="body-text" style="max-width: min(700px, 95vw); margin-bottom: var(--space-lg);">
+        A 10-section validated design chose the <span class="hl">hybrid approach</span>: a shared factory-core
+        architecture (Approach C) combined with harness-machine's proven convergence loop for quality
+        control (Approach A). Built as a standalone bundle — don't abstract until you have two consumers.
+    </p>
+    <div class="grid-3">
+        <div class="card-elevated">
+            <h4>🏭 Factory Core</h4>
+            <p>Shared architecture with internal factory patterns structured for future extraction.</p>
+        </div>
+        <div class="card-elevated">
+            <h4>🔄 Convergence Loop</h4>
+            <p>Generate → Critique → Refine → Evaluate. Proven by harness-machine, now generalized.</p>
+        </div>
+        <div class="card-elevated">
+            <h4>🔀 Three-Path Fork</h4>
+            <p>Create new / Improve existing / Rebuild from reference — one tool, three entry points.</p>
+        </div>
+        <div class="card-elevated">
+            <h4>🎯 Adaptive Interview</h4>
+            <p>Detects user experience from vocabulary. Never asks "are you a beginner?" directly.</p>
+        </div>
+        <div class="card-elevated">
+            <h4>⚡ Two-Track UX</h4>
+            <p>Interactive modes for hands-on exploration. Recipes for automation and CI/CD.</p>
+        </div>
+        <div class="card-elevated">
+            <h4>⚠️ /dangerously-skip-permissions</h4>
+            <p>Amplifier builds its own capabilities when it hits a gap. Machine quality gates still enforced.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 4 — The Pipeline
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 2 · Architecture</div>
+    <h2 class="medium-headline">10 specialist agents.<br>One assembly line.</h2>
+    <p class="body-text" style="margin-bottom: var(--space-md); max-width: min(750px, 95vw);">
+        Each agent fills an abstract pipeline slot with a specific specialty.
+        The pipeline flows from understanding to delivery:
+    </p>
+    <div class="pipeline">
+        <span class="pipeline-step accent">explorer</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">spec-writer</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">plan-writer</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step accent">generator</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">critic</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">refiner</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step accent">evaluator</span>
+        <span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">packager</span>
+    </div>
+    <p class="body-text" style="margin-top: var(--space-xs); margin-bottom: var(--space-lg);">
+        Plus <span class="hl-blue">auditor</span> and <span class="hl-blue">ecosystem-scout</span> working in parallel.
+    </p>
+    <div class="sub-headline" style="margin-top: var(--space-sm);">Three-level convergence</div>
+    <div class="grid-3" style="margin-top: var(--space-sm);">
+        <div class="card">
+            <h4>Structural</h4>
+            <p>Pass / Fail — does the bundle have the required files and valid YAML?</p>
+            <div class="meter-bar"><div class="meter-fill" style="width: 100%;"></div></div>
+            <div class="small-text" style="margin-top: 4px;">Binary gate</div>
+        </div>
+        <div class="card">
+            <h4>Philosophical</h4>
+            <p>Scored 0–1 — does it follow Amplifier principles? Threshold: 0.85</p>
+            <div class="meter-bar"><div class="meter-fill" style="width: 85%;"></div></div>
+            <div class="small-text" style="margin-top: 4px;">Threshold: 0.85</div>
+        </div>
+        <div class="card">
+            <h4>Functional</h4>
+            <p>Scored 0–1 — does the bundle actually work when loaded? Threshold: 0.80</p>
+            <div class="meter-bar"><div class="meter-fill" style="width: 80%;"></div></div>
+            <div class="small-text" style="margin-top: 4px;">Threshold: 0.80</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 5 — Evolving Architecture Diagram
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 2 · Visual Contract</div>
+    <h2 class="medium-headline">The evolving DOT diagram.</h2>
+    <p class="body-text" style="margin-bottom: var(--space-md); max-width: min(700px, 95vw);">
+        Every pipeline phase refines a living architecture diagram. The critic validates it.
+        This is the visual contract — what the bundle <em>is</em>, continuously updated.
+    </p>
+    <div class="code-block"><span class="code-gray">// Simplified DOT — each phase adds detail</span>
+
+<span class="code-pink">digraph</span> <span class="code-white">bundle</span> {
+  <span class="code-blue">rankdir</span>=LR
+
+  <span class="code-gray">// Phase 1: Explorer discovers structure</span>
+  <span class="code-green">user</span> -> <span class="code-green">interview</span> -> <span class="code-green">routing_fork</span>
+
+  <span class="code-gray">// Phase 2: Generator builds components</span>
+  <span class="code-yellow">routing_fork</span> -> {<span class="code-yellow">create</span> <span class="code-yellow">improve</span> <span class="code-yellow">rebuild</span>}
+
+  <span class="code-gray">// Phase 3: Evaluator validates convergence</span>
+  <span class="code-pink">create</span> -> <span class="code-pink">convergence_loop</span> -> <span class="code-pink">delivery</span>
+}</div>
+</div>
+
+<!-- ============================================================
+     SLIDE 6 — The Build
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 3 · The Build</div>
+    <h2 class="medium-headline">41 tasks. 3 phases.<br>39 files shipped.</h2>
+    <div class="grid-3" style="margin-top: var(--space-md);">
+        <div class="card">
+            <div class="phase-tag phase-1">Phase 1 · Foundation</div>
+            <h4>18 files</h4>
+            <p>bundle.md, behavior YAML, 6 context files, 8 modes, 3 templates — the skeleton of the factory.</p>
+        </div>
+        <div class="card">
+            <div class="phase-tag phase-2">Phase 2 · Agents</div>
+            <h4>10 agent definitions</h4>
+            <p>Each with full WHY / WHEN / WHAT / HOW descriptions. Every agent knows its role and boundaries.</p>
+        </div>
+        <div class="card">
+            <div class="phase-tag phase-3">Phase 3 · Integration</div>
+            <h4>Recipes, Skills, Docs</h4>
+            <p>5 recipes for automation, 2 skills for reuse, 2 docs for humans. The complete package.</p>
+        </div>
+    </div>
+    <div class="code-block" style="margin-top: var(--space-lg);"><span class="code-gray"># The bundle structure</span>
+<span class="code-blue">amplifier-bundle-bundlewizard/</span>
+├── <span class="code-green">bundle.md</span>              <span class="code-gray"># Identity & philosophy</span>
+├── <span class="code-green">behavior.yaml</span>          <span class="code-gray"># Modes, agents, recipes</span>
+├── <span class="code-yellow">agents/</span>                <span class="code-gray"># 10 specialist agents</span>
+│   ├── explorer.md
+│   ├── spec-writer.md
+│   ├── plan-writer.md
+│   ├── generator.md
+│   ├── critic.md
+│   ├── refiner.md
+│   ├── evaluator.md
+│   ├── packager.md
+│   ├── auditor.md
+│   └── ecosystem-scout.md
+├── <span class="code-pink">modes/</span>                 <span class="code-gray"># 8 operational modes</span>
+├── <span class="code-blue">recipes/</span>               <span class="code-gray"># 5 automation recipes</span>
+├── <span class="code-yellow">skills/</span>                <span class="code-gray"># 2 reusable skills</span>
+├── <span class="code-green">context/</span>               <span class="code-gray"># 6 context files</span>
+└── <span class="code-pink">templates/</span>             <span class="code-gray"># 3 starter templates</span></div>
+</div>
+
+<!-- ============================================================
+     SLIDE 7 — The Test Run
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 4 · First Test</div>
+    <h2 class="medium-headline">The factory's first product:<br><span class="hl">project-memory</span></h2>
+    <p class="body-text" style="max-width: min(750px, 95vw); margin-bottom: var(--space-lg);">
+        Bundlewizard's real test: generate a complete <strong>project-memory</strong> bundle from scratch.
+        The pipeline ran end-to-end — explore, spec, plan, execute, converge.
+    </p>
+    <div class="grid-2">
+        <div class="card">
+            <h4>🔍 Explore → Spec</h4>
+            <p>Adaptive interview detected the user's experience. Produced a <span class="hl">567-line specification</span> capturing every requirement.</p>
+        </div>
+        <div class="card">
+            <h4>📋 Plan → Execute</h4>
+            <p>Generated a <span class="hl">1,397-line implementation plan</span>. Parallel agent dispatch. Flawless execution through the pipeline.</p>
+        </div>
+    </div>
+    <div class="code-block" style="margin-top: var(--space-md);"><span class="code-gray"># What the pipeline produced</span>
+<span class="code-green">✓</span> 5 Python modules       <span class="code-gray">(596 lines of core library code)</span>
+<span class="code-green">✓</span> 3 hook modules         <span class="code-gray">(capture, briefing, end-capture)</span>
+<span class="code-green">✓</span> 1 tool module          <span class="code-gray">(6 operations)</span>
+<span class="code-green">✓</span> 2 agents               <span class="code-gray">(scribe + librarian, full WHY/WHEN/WHAT/HOW)</span>
+<span class="code-green">✓</span> 223 tests              <span class="code-gray">(ALL passing in 0.44 seconds)</span>
+<span class="code-green">✓</span> Clean git history      <span class="code-gray">(10 commits)</span>
+<span class="code-green">✓</span> Self-evaluation        <span class="code-gray">(level_score: 0.94, critic_verdict: PASS)</span></div>
+</div>
+
+<!-- ============================================================
+     SLIDE 8 — Mode Topology
+     ============================================================ -->
+<div class="slide center">
+    <div class="section-label">Act 4 · Mode Topology</div>
+    <h2 class="medium-headline">Mode Topology</h2>
+    <img src="mode-topology.png" alt="Mode Topology Diagram" style="max-width:min(720px, 90vw); border-radius:12px; margin: var(--space-md) 0;" />
+    <p class="subhead" style="margin-top: var(--space-md); max-width: min(800px, 95vw);">
+        8 modes form the pipeline. Auto-transitions advance the flow.
+        bundle-debug is the universal off-ramp. /dangerously-skip-permissions
+        bypasses human approval gates while keeping machine quality gates enforced.
+    </p>
+</div>
+
+<!-- ============================================================
+     SLIDE 9 — The Fixes
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 5 · Learning</div>
+    <h2 class="medium-headline">7 fixes applied.<br>The system gets smarter.</h2>
+    <p class="body-text" style="margin-bottom: var(--space-md); max-width: min(700px, 95vw);">
+        Every issue from the test run was fixed immediately.
+        This is the convergence philosophy in action — build, test, learn, improve.
+    </p>
+    <div class="grid-2">
+        <div class="card">
+            <div class="icon">🎯</div>
+            <h4>Focus Discipline</h4>
+            <p>Added CRITICAL blocks to all 10 agents forbidding skill loading during pipeline execution. No more irrelevant distractions.</p>
+        </div>
+        <div class="card">
+            <div class="icon">🔄</div>
+            <h4>Auto-Transition</h4>
+            <p>Modes now transition automatically instead of asking users to type <code>/bundle-X</code>. Smoother flow.</p>
+        </div>
+        <div class="card">
+            <div class="icon">📂</div>
+            <h4>Path Resolution Warning</h4>
+            <p>Generator now knows behavior YAML paths resolve relative to the behavior file's directory, not the repo root.</p>
+        </div>
+        <div class="card">
+            <div class="icon">🧪</div>
+            <h4>Runtime Verification</h4>
+            <p>Evaluator must attempt a real bundle load before declaring Level 1 PASS. No more self-validating claims.</p>
+        </div>
+        <div class="card">
+            <div class="icon">📦</div>
+            <h4>Delivery Requirements</h4>
+            <p>Packager must include install command, test prompts, and what to watch for. No terse handoffs.</p>
+        </div>
+        <div class="card">
+            <div class="icon">🔧</div>
+            <h4>Harness-Machine Fixes</h4>
+            <p>Fixed pattern.md double-load bug and hardcoded GitHub URL in the parent project too.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 10 — Also Built
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Act 5 · Bonus</div>
+    <h2 class="medium-headline">Also shipped<br>in this session.</h2>
+    <div class="grid-2" style="margin-top: var(--space-md);">
+        <div class="card-accent">
+            <h4>🔀 Path C: Rebuild from Reference</h4>
+            <p>Third routing path added to the fork — take an existing bundle, analyze what works, rebuild it from scratch with improvements. Complete the create / improve / rebuild triad.</p>
+        </div>
+        <div class="card-accent">
+            <h4>🏗️ Factory-Core Extraction Plan</h4>
+            <p>Created the plan for harness-machine's future refactor — extracting shared factory patterns so both harness-machine and bundlewizard share a common core.</p>
+        </div>
+        <div class="card-accent">
+            <h4>📊 Evolving DOT Diagram</h4>
+            <p>Architecture diagram that lives across all pipeline stages — every phase refines it, the critic validates it. Visual contract for what the bundle becomes.</p>
+        </div>
+        <div class="card-accent">
+            <h4>🐛 Harness-Machine Bug Fixes</h4>
+            <p>Fixed pattern.md double-load and templatized the hardcoded GitHub URL in generated artifacts. Upstream improvements.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 11 — The Philosophy
+     ============================================================ -->
+<div class="slide center">
+    <div class="section-label">Philosophy</div>
+    <h2 class="headline">The machine that<br>makes machines.</h2>
+    <p class="subhead" style="margin-top: var(--space-md);">
+        Bundlewizard embodies the Amplifier philosophy:
+    </p>
+    <div class="grid-3" style="margin-top: var(--space-lg); max-width: min(1000px, 95vw);">
+        <div class="card" style="text-align: left;">
+            <h4>Mechanism, Not Policy</h4>
+            <p>The pipeline defines <em>how</em> bundles converge, not <em>what</em> they must contain. Any bundle shape fits the factory.</p>
+        </div>
+        <div class="card" style="text-align: left;">
+            <h4>Bricks and Studs</h4>
+            <p>10 agents, each a single brick. They compose through the pipeline — not through inheritance or tight coupling.</p>
+        </div>
+        <div class="card" style="text-align: left;">
+            <h4>Ruthless Simplicity</h4>
+            <p>One bundle. Internal patterns. Don't abstract until you have two consumers. Ship, learn, extract later.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 12 — The Vision
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Vision</div>
+    <h2 class="medium-headline">/dangerously-skip-permissions</h2>
+    <p class="body-text" style="max-width: min(750px, 95vw); margin-bottom: var(--space-lg);">
+        The most radical design decision: when Amplifier hits a capability gap,
+        it can build its own tools. The <code>/dangerously-skip-permissions</code> mode
+        lets the AI extend itself — with machine quality gates still enforced.
+    </p>
+    <div class="code-block"><span class="code-gray"># The self-improvement loop</span>
+
+<span class="code-pink">1.</span> Amplifier encounters a task it can't do
+<span class="code-pink">2.</span> <span class="code-yellow">/dangerously-skip-permissions</span> activates
+<span class="code-pink">3.</span> Bundlewizard generates a new bundle for the capability
+<span class="code-pink">4.</span> Convergence loop validates: structural ✓ philosophical ✓ functional ✓
+<span class="code-pink">5.</span> New capability available <span class="code-green">immediately</span>
+
+<span class="code-gray"># The constraint: quality gates are never skipped</span>
+<span class="code-gray"># Only the permission to CREATE is granted, not the permission to ship garbage</span></div>
+    <p class="body-text" style="margin-top: var(--space-md); max-width: min(700px, 95vw);">
+        AI that builds its own capabilities when it hits a gap.
+        That's the endgame.
+    </p>
+</div>
+
+<!-- ============================================================
+     SLIDE 13 — Velocity Stats
+     ============================================================ -->
+<div class="slide center">
+    <div class="section-label">Velocity</div>
+    <h2 class="medium-headline">Single-session build.</h2>
+    <div class="velocity-grid" style="max-width: min(900px, 95vw);">
+        <div class="velocity-stat">
+            <div class="velocity-number">39</div>
+            <div class="velocity-label">Files Created</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">10</div>
+            <div class="velocity-label">Specialist Agents</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">8</div>
+            <div class="velocity-label">Modes</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">5</div>
+            <div class="velocity-label">Recipes</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">223</div>
+            <div class="velocity-label">Tests (0 failures)</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">0.94</div>
+            <div class="velocity-label">Convergence Score</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">3</div>
+            <div class="velocity-label">Repos Touched</div>
+        </div>
+        <div class="velocity-stat">
+            <div class="velocity-number">7</div>
+            <div class="velocity-label">Post-Test Fixes</div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 14 — Test Bundle Detail
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Test Output</div>
+    <h2 class="medium-headline">project-memory:<br>the factory's proof.</h2>
+    <table class="data-table" style="max-width: min(700px, 95vw);">
+        <thead>
+            <tr><th>Metric</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Python modules</td><td>5 (596 lines of core library code)</td></tr>
+            <tr><td>Hook modules</td><td>3 (capture, briefing, end-capture)</td></tr>
+            <tr><td>Tool modules</td><td>1 with 6 operations</td></tr>
+            <tr><td>Agents</td><td>2 (scribe + librarian)</td></tr>
+            <tr><td>Tests</td><td>223 — all passing in 0.44s</td></tr>
+            <tr><td>Git commits</td><td>10 with clean history</td></tr>
+            <tr><td>Convergence score</td><td>0.94 (threshold: 0.85)</td></tr>
+            <tr><td>Critic verdict</td><td>PASS</td></tr>
+            <tr><td>Total files</td><td>~35</td></tr>
+        </tbody>
+    </table>
+    <p class="body-text" style="margin-top: var(--space-md); max-width: min(700px, 95vw);">
+        One factory run. One complete, tested, documented bundle.
+        The spec was 567 lines. The plan was 1,397 lines.
+        The output works.
+    </p>
+</div>
+
+<!-- ============================================================
+     SLIDE 15 — Sources & Methodology
+     ============================================================ -->
+<div class="slide">
+    <div class="section-label">Sources</div>
+    <h2 class="medium-headline">Sources &amp; Methodology</h2>
+    <div class="body-text" style="line-height: 1.7; max-width: min(800px, 95vw);">
+        <p><strong>Data as of:</strong> March 17, 2026</p>
+        <p><strong>Feature status:</strong> Active</p>
+        <p style="margin-top: var(--space-sm);"><strong>Data sources:</strong></p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 4px 0;">• Session transcript: all stats, design decisions, and test results were provided directly by the session author (Michael Jabbour) from the build session</li>
+            <li style="padding: 4px 0;">• File counts (39 bundlewizard files, ~35 project-memory files): from session records of files created and pushed</li>
+            <li style="padding: 4px 0;">• Test results (223 tests, 0 failures, 0.44s): from pytest output during the test run</li>
+            <li style="padding: 4px 0;">• Convergence score (0.94): from bundlewizard's self-evaluation metadata stamp</li>
+            <li style="padding: 4px 0;">• Line counts (567-line spec, 1,397-line plan, 596 lines core): from session output</li>
+        </ul>
+        <p style="margin-top: var(--space-sm);"><strong>Repositories:</strong></p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 4px 0;">• <code>michaeljabbour/amplifier-bundle-bundlewizard</code></li>
+            <li style="padding: 4px 0;">• <code>michaeljabbour/amplifier-bundle-project-memory</code> (test output)</li>
+            <li style="padding: 4px 0;">• <code>michaeljabbour/amplifier-bundle-harness-machine</code> (bug fixes + plans)</li>
+        </ul>
+        <p style="margin-top: var(--space-sm);"><strong>Primary contributor:</strong> Michael Jabbour (sole author — single-session build)</p>
+        <p style="margin-top: var(--space-sm);"><strong>Gaps &amp; caveats:</strong></p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 4px 0;">• The convergence score (0.94) is a self-evaluation by the bundlewizard pipeline — not an independent assessment</li>
+            <li style="padding: 4px 0;">• "~35 files" for project-memory is approximate; exact count was not tallied</li>
+            <li style="padding: 4px 0;">• "Single session" refers to one extended working session — exact wall-clock duration not recorded</li>
+            <li style="padding: 4px 0;">• The test run exposed 3 issues (critic timeout, path bug, terse finish) that required fixes — the numbers above reflect the state <em>after</em> the initial generation, before fixes</li>
+        </ul>
+    </div>
+</div>
+
+<!-- ============================================================
+     SLIDE 16 — CTA
+     ============================================================ -->
+<div class="slide center">
+    <div class="section-label">Get Started</div>
+    <h2 class="headline">Build your own<br>bundle.</h2>
+    <p class="subhead" style="margin-top: var(--space-md);">
+        The factory is open. The pipeline is ready.<br>
+        Point bundlewizard at a problem and watch it build.
+    </p>
+    <div class="grid-3" style="margin-top: var(--space-lg); max-width: min(900px, 95vw);">
+        <div class="card" style="text-align: left;">
+            <h4>📦 Bundlewizard</h4>
+            <p style="word-break: break-all;">github.com/michaeljabbour/<wbr>amplifier-bundle-bundlewizard</p>
+        </div>
+        <div class="card" style="text-align: left;">
+            <h4>🧠 Project Memory</h4>
+            <p style="word-break: break-all;">github.com/michaeljabbour/<wbr>amplifier-bundle-project-memory</p>
+        </div>
+        <div class="card" style="text-align: left;">
+            <h4>🏭 Harness Machine</h4>
+            <p style="word-break: break-all;">github.com/michaeljabbour/<wbr>amplifier-bundle-harness-machine</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Navigation ── -->
+<div class="nav" id="nav"></div>
+<div class="slide-counter" id="counter"></div>
+<a href="../index.html" class="more-stories">More Amplifier Stories</a>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+
+    function showSlide(n) {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (n + slides.length) % slides.length;
+        slides[currentSlide].classList.add('active');
+        slides[currentSlide].scrollTop = 0;
+        updateNav();
+    }
+
+    function updateNav() {
+        const nav = document.getElementById('nav');
+        const counter = document.getElementById('counter');
+        nav.innerHTML = '';
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot' + (i === currentSlide ? ' active' : '');
+            dot.onclick = (e) => { e.stopPropagation(); showSlide(i); };
+            nav.appendChild(dot);
+        });
+        counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSlide(currentSlide + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide(currentSlide - 1); }
+    });
+
+    // Click navigation
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.nav') || e.target.closest('a') || e.target.closest('code')) return;
+        if (e.clientX > window.innerWidth / 2) showSlide(currentSlide + 1);
+        else showSlide(currentSlide - 1);
+    });
+
+    // Touch/swipe navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const SWIPE_THRESHOLD = 50;
+
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > SWIPE_THRESHOLD) {
+            if (diff > 0) showSlide(currentSlide + 1);
+            else showSlide(currentSlide - 1);
+        }
+    }, { passive: true });
+
+    updateNav();
+</script>
+</body>
+</html>
