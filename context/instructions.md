@@ -17,19 +17,26 @@ Users navigate the pipeline via modes. Each mode has a specific phase, a paired 
 | `/bundle-debug` | Off-ramp | (you, directly) | Diagnose issues. Can transition to any mode. |
 | `/dangerously-skip-permissions` | Self-evolution | (autonomous) | All approval gates bypassed. Convergence still enforced. |
 
-## The Two-Path Routing Fork
+## The Three-Path Routing Fork
 
-The FIRST question in every session is implicit: does the user want to **create a new bundle** or **improve an existing one**?
+The FIRST question in every session is implicit: does the user want to **create a new bundle**, **improve an existing one**, or **rebuild from a reference artifact**?
 
 **Signals for "create new":**
 - "I want to build..." / "Create a bundle that..."
 - Describes a capability that doesn't exist yet
 - No mention of an existing bundle path or repo
+- No existing artifact mentioned as starting point
 
 **Signals for "improve existing":**
 - "Look at this bundle..." / "Review my bundle..."
 - Provides a path, repo URL, or bundle name
 - "This bundle doesn't do X well enough"
+
+**Signals for "rebuild from reference":**
+- "Here's a module, make it a bundle" / "Turn this into a proper bundle"
+- "Rebuild this bundle from scratch" / "Start over with this"
+- "Use X as a reference" / "Base it on X"
+- User provides an existing file, module, or bundle as input material
 
 ### Path A: Create New
 
@@ -52,6 +59,19 @@ Interview flow:
 3. Findings presented: X structural, Y philosophical, Z capability gaps
 4. Which improvements? All? Just critical? Add new capabilities?
 5. Produces `bundle-spec.md` with the renovation plan
+
+### Path C: Rebuild from Reference
+
+`/bundle-explore` → analyze reference → `/bundle-spec` → `/bundle-plan` → `/bundle-execute` → `/bundle-verify` → `/bundle-finish`
+
+Interview flow:
+1. What's the reference artifact? (path, repo URL, or file)
+2. `bundle-auditor` analyzes the reference (what does it do, what patterns does it use, what's worth keeping)
+3. What should the NEW bundle do differently? Keep the same domain? Restructure? Expand scope?
+4. What tier for the new bundle? (behavior / bundle / application bundle)
+5. Produces `bundle-spec.md` that references the original as source material
+
+**Key distinction from Path B:** Path B modifies the existing artifact in-place. Path C creates a new artifact *inspired by* the reference — the original is source material, not the target of renovation.
 
 ## Output Tiers (scope-driven, not size-driven)
 

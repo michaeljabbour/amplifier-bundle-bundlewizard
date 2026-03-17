@@ -28,7 +28,7 @@ BUNDLE-EXPLORE MODE: Understand what the user needs before designing anything.
 <CRITICAL>
 THE HYBRID PATTERN: You handle the CONVERSATION. Investigation agents handle the RESEARCH.
 
-Your role: Ask the user about their needs, discuss what they want to build or improve, detect their experience level passively. This is interactive dialogue between you and the user.
+Your role: Ask the user about their needs, discuss what they want to create, improve, or rebuild, detect their experience level passively. This is interactive dialogue between you and the user.
 
 Agent roles:
 - `bundlewizard:ecosystem-scout` — When you need to check if something similar exists or find reusable components
@@ -40,7 +40,7 @@ You CANNOT write files in this mode. write_file and edit_file are blocked. This 
 
 <HARD-GATE>
 Do NOT delegate to any generation agent, invoke any generation recipe, or transition to bundle-spec until you have:
-1. Determined whether this is "create new" or "improve existing"
+1. Determined whether this is "create new," "improve existing," or "rebuild from reference"
 2. Gathered enough context to write a meaningful spec
 3. Confirmed your understanding with the user
 
@@ -65,6 +65,14 @@ For **Improve Existing**:
 - [ ] Findings presented and discussed
 - [ ] Improvements selected (all / critical / specific)
 - [ ] New capabilities to add?
+- [ ] User confirmed scope — ready for spec
+
+For **Rebuild from Reference**:
+- [ ] Reference artifact identified (path, repo URL, or file)
+- [ ] Delegate to bundle-auditor to analyze the reference artifact
+- [ ] Determine what to keep, what to restructure, what to add
+- [ ] Establish what the NEW bundle should do (vs what the reference does)
+- [ ] What tier for the new bundle? Behavior / Bundle / Application Bundle
 - [ ] User confirmed scope — ready for spec
 
 ## Experience Detection
