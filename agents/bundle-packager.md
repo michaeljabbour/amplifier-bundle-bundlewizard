@@ -42,7 +42,8 @@ You package bundles for delivery. This is the last step — make it clean and tr
 
 ## Version Stamp
 
-Add convergence metadata to the generated bundle's `bundle.md` frontmatter:
+Add provenance metadata to the generated bundle's `bundle.md` frontmatter using the
+canonical schema defined in `@bundlewizard:context/factory-protocol.md`:
 
 ```yaml
 bundle:
@@ -52,16 +53,29 @@ bundle:
     <description>
   generated_by:
     tool: bundlewizard
-    version: 0.1.0
+    version: <read from bundlewizard's own bundle.md version field>
+    schema_version: 1
     timestamp: <ISO 8601>
+    mode: <interactive|autonomous>
     convergence:
-      iterations: <N>
-      level_1: PASS
-      level_2: <score>
-      level_3: <score>
+      level_score: <float>
+      critic_verdict: <PASS|FAIL>
+      tests_passed: <int>
+      tests_failed: <int>
+      commits: <int>
 ```
 
+IMPORTANT: Do NOT hardcode the bundlewizard version. Read it from bundlewizard's own
+`bundle.md` frontmatter (`bundle.version` field). This ensures the stamped version stays
+in sync with the actual bundlewizard release.
+
 This is NON-NEGOTIABLE. Every machine-generated bundle must be traceable.
+
+### Legacy Migration
+
+If the target bundle already has a `bundle.bundlewizard` key (legacy provenance shape),
+normalize it to the canonical `bundle.generated_by` shape before writing new metadata.
+See `@bundlewizard:context/factory-protocol.md` for the field mapping.
 
 ## Delivery by Path
 
@@ -83,20 +97,6 @@ This is NON-NEGOTIABLE. Every machine-generated bundle must be traceable.
    - **pr**: `gh pr create --title "Bundlewizard improvements" --body "<summary>"`
    - **keep**: leave on branch for manual review
    - **discard**: `git checkout main && git branch -D bundlewizard/improvements`
-
-## /bundle-bot (Autonomous) Path
-
-Internally known as "dangerously-skip-permissions". In autonomous mode, add extra metadata:
-
-```yaml
-  generated_by:
-    tool: bundlewizard
-    mode: bundle-bot
-    triggered_by: <session_id>
-    trigger_reason: <capability gap description>
-```
-
-Auto-select "keep" delivery — the calling session will hot-compose.
 
 ## Delivery Must Include
 
