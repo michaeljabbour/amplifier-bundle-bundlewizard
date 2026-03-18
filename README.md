@@ -1,16 +1,20 @@
 # Bundlewizard
 
-Bundle generation and improvement factory for the Amplifier ecosystem.
+**The Bundle Wizard is both a guided flow and an expert builder:** it walks you through the process while quietly doing the work like a master.
 
-Bundlewizard builds bundles. You describe what you want (or point it at an existing bundle to improve), and it interviews you, designs the composition, generates artifacts, reviews them adversarially, refines until quality converges, and delivers a ready-to-use bundle.
+Bundlewizard generates new Amplifier bundles and upgrades existing ones. You describe what you need — or point it at a bundle to improve — and it interviews you, designs the composition, generates artifacts through an adversarial convergence loop, and delivers a ready-to-use bundle.
+
+It works two ways:
+- **As a guided flow** (the computing sense of "wizard"): a step-by-step process through explore, spec, plan, execute, verify, and finish
+- **As an expert builder** (the craft sense of "wizard"): applying best practices, patterns, and quality gates automatically under the hood
 
 ## Install
 
 ```bash
-# Add to your Amplifier registry
+# Register bundlewizard with Amplifier
 amplifier bundle add git+https://github.com/michaeljabbour/amplifier-bundle-bundlewizard@main
 
-# Set as active bundle
+# Set as your active bundle
 amplifier bundle use bundlewizard
 
 # Start a session
@@ -18,6 +22,12 @@ amplifier
 ```
 
 Bundlewizard includes `amplifier-foundation` automatically. No additional dependencies needed.
+
+To switch back to your normal bundle when done:
+
+```bash
+amplifier bundle use superpowers  # or whatever your default is
+```
 
 ## Quick Start
 
@@ -37,6 +47,28 @@ You: Improve my bundle at ~/dev/my-bundle
 
 Bundlewizard audits the bundle against three quality levels, presents findings, and fixes what you choose.
 
+### Upgrade an older generated bundle
+
+```
+You: Upgrade ~/dev/amplifier-bundle-project-memory
+```
+
+Bundlewizard detects older provenance metadata (`bundlewizard:` legacy format), migrates it to the canonical `generated_by` schema, and runs targeted improvements. You can also just point it at an older bundle — it will auto-detect the legacy format and offer to upgrade.
+
+### Go autonomous (yolo mode)
+
+Add `"yolo"`, `"go autonomous"`, or `"run it all"` to any request:
+
+```
+You: Build me a bundle for managing git worktrees, yolo
+```
+
+Exploration still happens first (bundlewizard needs to understand what you want). After that, the full pipeline runs without human checkpoints. Machine quality gates remain fully enforced — you skip human approval, not quality.
+
+### Amplifier-as-caller
+
+Amplifier itself can spawn bundlewizard when it detects a missing capability. In this mode, Amplifier performs the explore phase directly (it already knows what it needs), then launches the autonomous continuation recipe. The user sees: *"I needed X capability, so I built it. Here's what I created: [summary]. Continuing."*
+
 ### Audit only (no changes)
 
 ```
@@ -45,28 +77,52 @@ You: Audit the bundle at ~/dev/my-bundle — just tell me what's wrong, don't ch
 
 Returns a structured findings report with scores and priority-ordered issues.
 
-### Go autonomous
-
-Add "yolo", "go autonomous", or "hands-off" to any request and bundlewizard runs the full pipeline without stopping for approval.
-
-```
-You: Build me a bundle for managing git worktrees, yolo
-```
-
 ## Two Tracks
 
-Both tracks produce the same artifact. Modes give you the steering wheel; recipes give you cruise control.
+**Modes are the steering wheel. Recipes are cruise control.**
 
 | Track | How | Best For |
 |-------|-----|----------|
 | **Interactive** (default) | Navigate modes manually: `/bundle-explore` through `/bundle-finish` | Hands-on control at each step |
-| **Autonomous** (opt-in) | `/bundle-explore` launches the full pipeline automatically | End-to-end with no gates |
+| **Autonomous** (opt-in) | `/bundle-explore` detects autonomy request and launches the full pipeline automatically | End-to-end generation without checkpoints |
+
+Both tracks produce the same output. The autonomous track just removes the human checkpoints after exploration is complete. If the autonomous run hits trouble (failed verification, unresolved requirements, convergence stall), it offers a takeover point via `STATE.yaml` rather than forcing one — the caller decides whether to continue, ask the user, or switch to manual steering.
+
+## How It Works
+
+```
+EXPLORE ——— interview, audit, ecosystem survey, upgrade detection
+   │
+   ├── [default] ——→ manual mode pipeline
+   │
+   └── [yolo] ———→ autonomous continuation recipe
+                     │
+   ┌─────────────────┘
+   v
+ SPEC ————— design composition (bundle-spec.md)
+   │
+   v
+ PLAN ————— break into ordered tasks
+   │
+   v
+EXECUTE ——— convergence loop:
+   │        ┌─ generate ─> critique ─> refine ─> evaluate ─┐
+   │        └──────────────── (until converged) <───────────┘
+   │
+   v
+VERIFY ———— independent three-level verification
+   │
+   v
+FINISH ———— version stamp, git init/branch, deliver
+```
+
+The critic always runs with `context_depth="none"` — fresh eyes, no shared context from the generator. The evaluator is independent of both. This adversarial structure catches issues that self-review misses.
 
 ## Modes
 
 | Command | Phase | What Happens |
 |---------|-------|--------------|
-| `/bundle-explore` | Interview | Understand what you need, route to create or improve |
+| `/bundle-explore` | Interview | Understand what you need, detect upgrade candidates, route to create/improve/upgrade — or launch autonomous continuation |
 | `/bundle-spec` | Design | Compose the bundle specification |
 | `/bundle-plan` | Planning | Break spec into implementation tasks |
 | `/bundle-execute` | Generation | Convergence loop: generate, critique, refine, evaluate |
@@ -80,8 +136,8 @@ Flow: `explore` > `spec` > `plan` > `execute` > `verify` > `finish`. Debug is av
 
 | Agent | Role | When It Runs |
 |-------|------|--------------|
-| `bundle-explorer` | Adaptive interview, experience detection, routing | Every session starts here |
-| `bundle-auditor` | Three-level audit of existing bundles | Improve path only |
+| `bundle-explorer` | Adaptive interview, experience detection, upgrade detection, routing | Every session starts here |
+| `bundle-auditor` | Three-level audit of existing bundles | Improve and upgrade paths |
 | `ecosystem-scout` | Survey ecosystem for similar bundles and reusable parts | Create path, during interview |
 | `bundle-spec-writer` | Design the bundle composition | After interview |
 | `bundle-plan-writer` | Break spec into ordered tasks | After spec approval |
@@ -89,18 +145,18 @@ Flow: `explore` > `spec` > `plan` > `execute` > `verify` > `finish`. Debug is av
 | `bundle-critic` | Adversarial review with fresh eyes (`context_depth="none"`) | After each generation |
 | `bundle-refiner` | Targeted fixes from critic feedback only | When critic says NEEDS CHANGES |
 | `bundle-evaluator` | Three-level convergence scoring | After each refinement |
-| `bundle-packager` | Version stamp, git, delivery options (merge/PR/keep/discard) | Terminal step |
+| `bundle-packager` | Version stamp, provenance metadata, git, delivery | Terminal step |
 
 ## Recipes
 
 | Recipe | Pattern | Use |
 |--------|---------|-----|
-| `bundle-autonomous-post-explore.yaml` | Staged, no gates | Autonomous track (launched by explore) |
-| `bundle-development-cycle.yaml` | Staged, 3 approval gates | Full interactive pipeline |
-| `bundle-audit.yaml` | Flat sequential | Evaluate existing bundle, no changes |
-| `bundle-batch-generation.yaml` | Foreach with STATE.yaml | Generate multiple bundles |
-| `bundle-refinement-loop.yaml` | While-loop convergence | Internal (called by other recipes) |
-| `bundle-single-iteration.yaml` | Sequential 4-step | Internal (called by refinement loop) |
+| `bundle-autonomous-post-explore.yaml` | Staged, no gates | Autonomous track — launched by explore when yolo requested |
+| `bundle-development-cycle.yaml` | Staged, 3 approval gates | Full interactive pipeline with human checkpoints |
+| `bundle-audit.yaml` | Flat sequential | Evaluate existing bundle without making changes |
+| `bundle-batch-generation.yaml` | Foreach with STATE.yaml | Generate multiple bundles from a target list |
+| `bundle-refinement-loop.yaml` | While-loop convergence | Internal — called by other recipes |
+| `bundle-single-iteration.yaml` | Sequential 4-step | Internal — called by refinement loop |
 
 ### Running recipes directly
 
@@ -118,11 +174,6 @@ amplifier run --bundle bundlewizard \
 amplifier run --bundle bundlewizard \
   "run bundlewizard:recipes/bundle-audit.yaml \
   with bundle_path='~/dev/my-bundle'"
-
-# Batch generation
-amplifier run --bundle bundlewizard \
-  "run bundlewizard:recipes/bundle-batch-generation.yaml \
-  with targets=['code review helper','git worktree manager']"
 ```
 
 ## Quality System
@@ -160,21 +211,9 @@ converged = (L1 == PASS) AND (L2 >= 0.85) AND (L3 >= 0.80)
 
 The generate/critique/refine/evaluate loop runs up to 10 iterations until convergence is met. Best result is always checkpointed.
 
-## Output Tiers
+## Provenance and Upgrade Support
 
-Bundlewizard produces three tiers of output depending on scope:
-
-| Tier | What It Is | Example |
-|------|-----------|---------|
-| **Behavior** | YAML + context + agents, composed via `includes:` | A reusable capability package |
-| **Bundle** | Standalone: bundle.md, behaviors, agents, context | A focused tool |
-| **Application Bundle** | Full: modes, recipes, skills, possibly modules | A complete workflow system |
-
-Size is emergent from scope, not a design input.
-
-## Provenance Tracking
-
-Every machine-generated bundle gets a `generated_by` block in its `bundle.md`:
+Every machine-generated bundle gets a `generated_by` block in its `bundle.md` frontmatter:
 
 ```yaml
 bundle:
@@ -192,30 +231,40 @@ bundle:
       commits: 3
 ```
 
-## How It Works
+This metadata enables:
+- **Traceability** — you can always tell which bundles were machine-generated and what quality bar they met
+- **Upgrades** — bundlewizard detects older provenance formats (legacy `bundlewizard:` shape without `generated_by`) and offers to migrate them to the canonical schema
+- **Audit trail** — autonomous runs include `triggered_by` and `trigger_reason` fields for full provenance chain
 
-```
-EXPLORE ─── interview, audit, ecosystem survey
-   │
-   v
- SPEC ───── design composition (bundle-spec.md)
-   │
-   v
- PLAN ───── break into ordered tasks
-   │
-   v
-EXECUTE ─── convergence loop:
-   │        ┌─ generate ─> critique ─> refine ─> evaluate ─┐
-   │        └──────────────── (until converged) <───────────┘
-   │
-   v
-VERIFY ──── independent three-level verification
-   │
-   v
-FINISH ──── version stamp, git, deliver
-```
+### Upgrade detection
 
-The critic always runs with `context_depth="none"` (fresh eyes, no shared context from the generator). The evaluator is independent of both. This adversarial structure catches issues that self-review misses.
+Bundlewizard recognizes older generated bundles automatically:
+- Legacy `bundle.bundlewizard` provenance (no `generated_by`, no `schema_version`)
+- Older `generated_by` blocks with `schema_version` below current
+
+When detected, upgrade routes through the existing improve flow — not a separate mode stack. The upgrade normalizes provenance metadata and runs targeted improvements based on what changed between versions.
+
+## Takeover Model
+
+When running autonomously, bundlewizard classifies outcomes into three buckets:
+
+1. **Continue autonomously** — normal progress, recoverable feedback, keep going
+2. **Pause and offer takeover** — unresolved requirements, repeated stalls, judgment calls needed. Updates `STATE.yaml` with `takeover.status: "paused"` and a recommended re-entry point
+3. **Escalate** — broken assumptions, missing source material, contradictions. Updates `STATE.yaml` with `takeover.status: "escalated"` and returns an error
+
+Takeover is **offered, not forced**. If Amplifier is the caller, it can consume the takeover signal and decide next steps without bouncing to the user.
+
+## Output Tiers
+
+Bundlewizard produces three tiers of output depending on scope:
+
+| Tier | What It Is | Example |
+|------|-----------|---------|
+| **Behavior** | YAML + context + agents, composed via `includes:` | A reusable capability package |
+| **Bundle** | Standalone: bundle.md, behaviors, agents, context | A focused tool |
+| **Application Bundle** | Full: modes, recipes, skills, possibly modules | A complete workflow system |
+
+Size is emergent from scope, not a design input.
 
 ## Skills
 
