@@ -364,18 +364,24 @@ stages:
           STEP 2 (only if takeover.status == "not_needed" or ""):
           Package the bundle for delivery:
 
-          2a. Add generated_by block to bundle.md frontmatter:
+          2a. Add generated_by block to bundle.md frontmatter, nested under bundle:.
+              Read bundlewizard's own version from its bundle.md (bundle.version field).
               ```yaml
-              generated_by:
-                tool: bundlewizard
-                mode: autonomous
-                triggered_by: <session ID from STATE.yaml session.id>
-                trigger_reason: {{trigger_reason}}
-                convergence:
-                  iterations: <stages.execute.iterations from STATE.yaml>
-                  level_1: PASS
-                  level_2: <stages.verify.level_2 from STATE.yaml>
-                  level_3: <stages.verify.level_3 from STATE.yaml>
+              bundle:
+                generated_by:
+                  tool: bundlewizard
+                  version: <bundlewizard version>
+                  schema_version: 1
+                  timestamp: <current ISO 8601 timestamp>
+                  mode: autonomous
+                  triggered_by: <session ID from STATE.yaml session.id>
+                  trigger_reason: {{trigger_reason}}
+                  convergence:
+                    level_score: <best score from STATE.yaml>
+                    critic_verdict: <PASS or FAIL from verification>
+                    tests_passed: <from verification report>
+                    tests_failed: <from verification report>
+                    commits: <number of commits in the generated bundle>
               ```
 
           2b. Generate or update README.md with usage instructions for the new bundle.
