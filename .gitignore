@@ -7,3 +7,4 @@ __pycache__/
 # Locally checked-out submodule directories (not tracked by this repo)
 amplifier-bundle-modes/
 amplifier-bundle-superpowers/
+.worktrees/

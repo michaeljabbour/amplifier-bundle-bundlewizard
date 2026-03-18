@@ -1,7 +1,7 @@
 ---
 bundle:
   name: bundlewizard
-  version: 0.1.0
+  version: 0.2.0
   description: |
     Bundle generation and improvement factory for the Amplifier ecosystem.
     Generates new bundles and improves existing ones through structured
@@ -54,6 +54,9 @@ checkpoints after exploration is complete.
 ## Getting Started
 
 Say what you want to build, or point me at a bundle to improve. I'll figure out the rest.
+
+To upgrade an older generated bundle, point me at it and say "upgrade" — or I'll detect
+older bundlewizard provenance automatically and offer to migrate it.
 
 To go fully autonomous, add `"go autonomous"`, `"yolo"`, or `"run it all"` to your
 request. Exploration still happens first — autonomous continuation begins after.

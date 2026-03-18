@@ -80,20 +80,25 @@ unless a real decision is needed.
 
 ## Audit Trail
 
-Every bundle generated via autonomous continuation MUST include a `generated_by` block in
-its `bundle.md` frontmatter:
+Every bundle generated via autonomous continuation MUST include a `generated_by` block
+nested under `bundle:` in its `bundle.md` frontmatter:
 
 ```yaml
-generated_by:
-  tool: bundlewizard
-  mode: autonomous
-  triggered_by: <session_id>
-  trigger_reason: <why autonomy was requested>
-  convergence:
-    iterations: <N>
-    level_1: PASS
-    level_2: <score>
-    level_3: <score>
+bundle:
+  generated_by:
+    tool: bundlewizard
+    version: <bundlewizard version from bundle.md>
+    schema_version: 1
+    timestamp: <ISO 8601>
+    mode: autonomous
+    triggered_by: <session_id>
+    trigger_reason: <why autonomy was requested>
+    convergence:
+      level_score: <float>
+      critic_verdict: <PASS|FAIL>
+      tests_passed: <int>
+      tests_failed: <int>
+      commits: <int>
 ```
 
 The `triggered_by` field is the session ID of the calling session. The `trigger_reason`

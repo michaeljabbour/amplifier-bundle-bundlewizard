@@ -318,3 +318,56 @@ def test_instructions_no_bundle_bot():
         "context/instructions.md still references /bundle-bot. "
         "The bundle-bot row should be removed from the mode routing table."
     )
+
+
+def test_explore_mode_detects_upgrade_intent():
+    """modes/bundle-explore.md must detect upgrade intent phrases."""
+    path = MODES_DIR / "bundle-explore.md"
+    content = path.read_text(encoding="utf-8")
+    assert "upgrade" in content.lower(), (
+        "bundle-explore.md must detect upgrade intent"
+    )
+    assert "legacy" in content.lower() or "bundlewizard provenance" in content.lower(), (
+        "bundle-explore.md must detect legacy bundlewizard provenance"
+    )
+
+
+def test_explore_mode_has_upgrade_handoff_fields():
+    """modes/bundle-explore.md handoff payload must contain upgrade_requested."""
+    path = MODES_DIR / "bundle-explore.md"
+    content = path.read_text(encoding="utf-8")
+    assert "upgrade_requested" in content, (
+        "bundle-explore.md handoff payload must contain upgrade_requested field"
+    )
+
+
+def test_recipe_context_has_upgrade_fields():
+    """Autonomous recipe context block must include upgrade_requested with safe default."""
+    path = RECIPES_DIR / "bundle-autonomous-post-explore.yaml"
+    content = path.read_text(encoding="utf-8")
+    assert "upgrade_requested" in content, (
+        "Recipe context must include upgrade_requested field"
+    )
+
+
+def test_instructions_describes_upgrade_path():
+    """context/instructions.md must describe upgrade as a recognized path."""
+    path = CONTEXT_DIR / "instructions.md"
+    content = path.read_text(encoding="utf-8")
+    assert "upgrade" in content.lower(), (
+        "instructions.md must describe upgrade as a recognized path"
+    )
+
+
+def test_bundle_version_bumped():
+    """bundle.md version must be >= 0.2.0 after upgrade feature addition."""
+    path = REPO_ROOT / "bundle.md"
+    content = path.read_text(encoding="utf-8")
+    match = re.match(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
+    assert match, "No YAML frontmatter found in bundle.md"
+    data = yaml.safe_load(match.group(1))
+    version = data.get("bundle", {}).get("version", "0.0.0")
+    parts = [int(x) for x in str(version).split(".")]
+    assert parts >= [0, 2, 0], (
+        f"bundle.md version must be >= 0.2.0 after upgrade feature, got {version}"
+    )
