@@ -31,6 +31,11 @@ context:
   trigger_reason: ""          # Why autonomy was requested ("yolo", "amplifier-caller", etc.)
   open_questions: ""          # Unresolved questions — must be empty before spec begins
   output_dir: "output"        # Where to write generated artifacts
+  upgrade_requested: false   # True if upgrade intent or legacy provenance detected
+  upgrade_reason: ""         # "explicit_intent" | "legacy_provenance_detected" | "schema_mismatch"
+  provenance_shape: ""       # "legacy_bundlewizard" | "generated_by_v1" | "none"
+  source_schema_version: ""  # Schema version found in target (empty if none)
+  target_schema_version: "1" # Current canonical schema version
 
 stages:
   # ============================================================================
@@ -62,6 +67,11 @@ stages:
           OPEN QUESTIONS:          {{open_questions}}
           OUTPUT DIR:              {{output_dir}}
           ─────────────────────────────────────────────────────────────────────
+
+          UPGRADE AWARENESS: If {{upgrade_requested}} is true, this spec should focus on
+          migration and targeted improvements rather than full redesign. Use
+          {{upgrade_reason}} and {{provenance_shape}} to guide scope. Migrate from
+          {{source_schema_version}} to {{target_schema_version}} where applicable.
 
           STEP 1 — Blocker check:
           Read {{open_questions}}. If any item is a genuine blocker (i.e., you cannot
