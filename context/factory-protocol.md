@@ -95,10 +95,11 @@ Both tracks use the **same agents** with the **same context**. The only differen
 
 ## Version Stamping
 
-Every bundle produced by the factory gets a version stamp:
+Every bundle produced by the factory gets a provenance stamp in its `bundle.md` frontmatter.
+
+### Canonical Schema
 
 ```yaml
-# In the generated bundle.md frontmatter:
 bundle:
   name: <generated-bundle-name>
   version: 0.1.0
@@ -106,15 +107,53 @@ bundle:
     <generated description>
   generated_by:
     tool: bundlewizard
-    version: 0.1.0
+    version: <bundlewizard version from bundle.md>
+    schema_version: 1
+    timestamp: <ISO 8601>
+    mode: <interactive|autonomous>
     convergence:
-      iterations: <N>
-      level_1: PASS
-      level_2: <score>
-      level_3: <score>
+      level_score: <float>
+      critic_verdict: <PASS|FAIL>
+      tests_passed: <int>
+      tests_failed: <int>
+      commits: <int>
 ```
 
-This metadata enables traceability — you can always tell which bundles were machine-generated and what quality bar they met.
+The `generated_by` block is nested under `bundle:` — it is bundle metadata, not a separate top-level key.
+
+### Upgrade Stub Fields
+
+These four fields are the upgrade contract. Upgrade logic reads them to decide whether migration is needed:
+
+- `generated_by.tool` — identifies the generator
+- `generated_by.version` — which version of the generator ran
+- `generated_by.schema_version` — artifact format version (integer, bump when structure changes)
+- `generated_by.timestamp` — when the bundle was generated
+
+Everything under `convergence` is audit trail — upgrade logic ignores it.
+
+### Legacy Fingerprint Recognition
+
+Older generated bundles may use a different provenance shape. The legacy fingerprint is:
+
+- `bundle.bundlewizard` key present (instead of `bundle.generated_by`)
+- No `generated_by` key anywhere
+- No `schema_version` field
+
+When this fingerprint is detected, the upgrade path normalizes it to the canonical shape:
+- `bundle.bundlewizard` → `bundle.generated_by`
+- `bundlewizard.packaged_at` → `generated_by.timestamp`
+- `bundlewizard.level_score` → `generated_by.convergence.level_score`
+- `bundlewizard.critic_verdict` → `generated_by.convergence.critic_verdict`
+- `bundlewizard.tests_passed` → `generated_by.convergence.tests_passed`
+- `bundlewizard.tests_failed` → `generated_by.convergence.tests_failed`
+- `bundlewizard.commits` → `generated_by.convergence.commits`
+- Add `generated_by.tool: bundlewizard`
+- Add `generated_by.version: <current bundlewizard version>`
+- Add `generated_by.schema_version: 1`
+- Remove the legacy `bundlewizard` key
+
+This metadata enables traceability and upgradeability — you can always tell which bundles were machine-generated, what quality bar they met, and whether they need a schema migration.
 
 ## Domain-Specific Extensions
 
