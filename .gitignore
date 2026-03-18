@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Locally checked-out submodule directories (not tracked by this repo)
+amplifier-bundle-modes/
+amplifier-bundle-superpowers/
