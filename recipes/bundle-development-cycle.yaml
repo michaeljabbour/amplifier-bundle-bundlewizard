@@ -1,7 +1,14 @@
 # Bundle Development Cycle
-# Full interactive cycle with 3 approval gates: explore → spec → plan → execute → verify → finish.
+# Full INTERACTIVE cycle with 3 human approval gates: explore → spec → plan → execute → verify → finish.
 #
-# Pattern: staged recipe with human checkpoints (same pattern as harness-development-cycle).
+# This is the GATED track. Each stage requires human review and approval before proceeding.
+# Use this when you want hands-on control at every critical juncture.
+#
+# For the AUTONOMOUS track (no approval gates, post-explore recipe):
+#   use bundlewizard:recipes/bundle-autonomous-post-explore.yaml
+#   launched automatically by bundle-explore when autonomy is requested
+#
+# Pattern: staged recipe with human checkpoints.
 # Each stage has a defined job; approval gates let the human validate at critical junctures.
 #
 # Stages:
