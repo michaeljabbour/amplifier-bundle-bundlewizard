@@ -1,13 +1,22 @@
 # Bundlewizard Factory State
 # Copied into the working directory at the start of a factory run.
 # Updated by agents after each stage.
+#
+# Used as the shared bridge between manual and autonomous operation.
+# Manual flow: the user or Amplifier updates fields between mode transitions.
+# Autonomous flow: the post-explore recipe updates fields as each stage completes.
+# Takeover: if autonomous flow leaves the golden path, the takeover section
+#           describes what happened and where to re-enter manually.
 
 session:
-  id: ""                    # Session ID (auto-populated)
-  started: ""               # ISO 8601 timestamp
-  path: ""                  # "create_new" or "improve_existing"
-  tier: ""                  # "behavior" | "bundle" | "application_bundle"
-  target: ""                # Bundle name (create) or path (improve)
+  id: ""                     # Session ID (auto-populated)
+  started: ""                # ISO 8601 timestamp
+  path: ""                   # "create_new" | "improve_existing" | "rebuild_from_reference"
+  tier: ""                   # "behavior" | "bundle" | "application_bundle"
+  target: ""                 # Bundle name (create) or path/URL (improve/rebuild)
+  autonomy_requested: false  # Set true when autonomous continuation was opted in
+  trigger_reason: ""         # Why autonomy was requested (e.g., "yolo", "amplifier-caller")
+  open_questions: ""         # Unresolved questions from explore (must be empty before recipe runs)
 
 stages:
   explore:
@@ -29,7 +38,7 @@ stages:
     best_score: 0.0
     converged: false
   verify:
-    status: pending
+    status: pending          # pending | in_progress | completed | failed_verification | needs_takeover
     completed_at: ""
     level_1: ""              # PASS | FAIL
     level_2: 0.0
@@ -46,3 +55,9 @@ convergence:
   patience_counter: 0
   best_checkpoint: ""        # Path to best-so-far artifacts
   history: []                # List of {iteration, level_1, level_2, level_3, notes}
+
+takeover:
+  status: ""                 # "" | "not_needed" | "paused" | "escalated"
+  recommended_entry: ""      # "bundle-spec" | "bundle-plan" | "bundle-execute" | "bundle-debug" | "bundle-explore"
+  explanation: ""            # Short explanation of why takeover is needed
+  caller_notes: ""           # For Amplifier-as-caller: notes on suggested next action

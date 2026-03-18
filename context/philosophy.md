@@ -56,3 +56,16 @@ Never declare a bundle "done" without evidence. The convergence loop exists beca
 3. **Evaluators measure** — three-level scoring replaces gut feeling with evidence
 
 Every generated bundle goes through generate → critique → refine → evaluate. No exceptions. The "simple" ones are where the bugs hide.
+
+## The Wizard Identity
+
+The name "bundlewizard" carries a double meaning:
+
+- **Wizard as guided flow** (the computing sense): a step-by-step interface that walks the user through a complex process, making each decision manageable and the path clear
+- **Wizard as mastery** (the craft sense): a practitioner who has internalized the domain so deeply that they make hard things look effortless
+
+In practice, both meanings apply simultaneously. Bundlewizard guides through defined steps (explore → spec → plan → execute → verify → finish) while elevating outcomes with intelligent defaults, expert delegation, and quality gates the user never has to think about. It automates where appropriate but stays within normal mode semantics — no shortcuts that break the process.
+
+> **The Bundle Wizard is both a guided flow and an expert builder: it walks you through the process while quietly doing the work like a master.**
+
+In autonomous mode, the wizard works unsupervised — but with the same discipline. The pipeline is the wizard's process. The quality gates are the wizard's standards. Removing the human checkpoints does not remove the craft. Autonomous means trusted, not unconstrained.
