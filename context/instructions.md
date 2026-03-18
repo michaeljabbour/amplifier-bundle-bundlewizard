@@ -99,6 +99,9 @@ exploration is complete.
 - Autonomy is **always opt-in**. The default is interactive.
 - Autonomy detection happens inside `bundle-explore`. Vocabulary signals: `"yolo"`,
   `"go autonomous"`, `"run it all"`, `"hands-off"`.
+- Upgrade detection: if the target bundle has legacy bundlewizard provenance or the user
+  says "upgrade", "refresh", "migrate", or "bring up to date", bundlewizard treats this
+  as an upgrade request routed through the existing improve path.
 - Amplifier-as-caller: if Amplifier is the caller and has enough context, it may perform
   the explore phase directly and then launch the continuation recipe without bouncing back
   to the user.
