@@ -1,0 +1,434 @@
+# Bundle Autonomous Post-Explore
+# Autonomous continuation recipe that starts AFTER bundle-explore completes.
+#
+# Owns the full pipeline: spec -> plan -> execute -> verify -> finish
+# NO human approval gates — this is the autonomous track.
+# Machine quality gates are fully enforced (never skippable).
+# Takeover is offered via STATE.yaml, not forced via approval gates.
+#
+# Reuses bundlewizard:recipes/bundle-refinement-loop.yaml for execution —
+# do NOT duplicate convergence logic here.
+#
+# Policy context: @bundlewizard:context/autonomous-protocol.md
+#
+# Design constraint: ALL logic is contained in this bundle.
+# Do NOT rely on or assume any upstream hooks-mode.autonomous behavior.
+# This is the contained design.
+
+name: "bundle-autonomous-post-explore"
+description: "Autonomous continuation after bundle-explore — drives spec, plan, execute, verify, and finish without human approval gates. Takeover offered via STATE.yaml if the golden path is broken."
+version: "1.0.0"
+author: "Bundlewizard Bundle"
+tags: ["bundle", "autonomous", "post-explore", "continuation", "no-gates"]
+
+context:
+  # ── Explore handoff payload ──────────────────────────────────────────────
+  path_decision: ""           # "create_new" | "improve_existing" | "rebuild_from_reference"
+  target: ""                  # Bundle name (create) or path/URL (improve/rebuild)
+  tier: ""                    # "behavior" | "bundle" | "application_bundle"
+  summary_of_requirements: "" # What was learned in bundle-explore
+  known_constraints: ""       # Constraints discovered (scope limits, dependencies, etc.)
+  trigger_reason: ""          # Why autonomy was requested ("yolo", "amplifier-caller", etc.)
+  open_questions: ""          # Unresolved questions — must be empty before spec begins
+  output_dir: "output"        # Where to write generated artifacts
+
+stages:
+  # ============================================================================
+  # STAGE 1: Spec
+  # Produce the bundle specification from the explore handoff payload.
+  # If open_questions are blockers, update STATE.yaml takeover and error.
+  # Otherwise write {{output_dir}}/bundle-spec.md and update STATE.yaml.
+  # No approval gate — autonomous track.
+  # ============================================================================
+  - name: "spec"
+    steps:
+      - id: "write-spec"
+        agent: "bundlewizard:bundle-spec-writer"
+        prompt: |
+          AUTONOMOUS CONTINUATION — read @bundlewizard:context/autonomous-protocol.md for
+          the full policy before proceeding.
+
+          You are running as part of the autonomous post-explore pipeline. There is no
+          human in the loop. Apply the golden path: stay autonomous, enforce machine
+          quality gates, offer takeover via STATE.yaml only if you truly cannot proceed.
+
+          ── Explore Handoff Payload ──────────────────────────────────────────
+          PATH DECISION:           {{path_decision}}
+          TARGET:                  {{target}}
+          TIER:                    {{tier}}
+          SUMMARY OF REQUIREMENTS: {{summary_of_requirements}}
+          KNOWN CONSTRAINTS:       {{known_constraints}}
+          TRIGGER REASON:          {{trigger_reason}}
+          OPEN QUESTIONS:          {{open_questions}}
+          OUTPUT DIR:              {{output_dir}}
+          ─────────────────────────────────────────────────────────────────────
+
+          STEP 1 — Blocker check:
+          Read {{open_questions}}. If any item is a genuine blocker (i.e., you cannot
+          write a meaningful spec without resolving it), do the following before
+          anything else:
+            a. Read {{output_dir}}/STATE.yaml (if it exists).
+            b. Set takeover.status = "paused"
+               Set takeover.recommended_entry = "bundle-explore"
+               Set takeover.explanation = "<brief explanation of the blocker>"
+            c. Write the updated STATE.yaml back.
+            d. Return an error message: "TAKEOVER REQUESTED: open_questions contains
+               blockers that must be resolved before spec can proceed. See STATE.yaml."
+
+          If open_questions is empty or all items are non-blocking notes, continue.
+
+          STEP 2 — Write the spec:
+          Produce a concrete bundle specification document at:
+            {{output_dir}}/bundle-spec.md
+
+          The specification MUST include:
+          - Output tier: behavior | bundle | application-bundle
+          - Complete file structure (tree diagram of all files)
+          - Component design: agents, behaviors, context files, modes, recipes
+          - Delegation map: which existing experts handle which concerns
+          - Convergence expectations: Level 1 gates, Level 2 targets, Level 3 criteria
+          - For improve/rebuild path: ordered list of changes from audit findings
+
+          Delegate to foundation:foundation-expert to validate the composition design.
+
+          STEP 3 — Update STATE.yaml:
+          Update (or create) {{output_dir}}/STATE.yaml:
+            stages.spec.status = "completed"
+            stages.spec.completed_at = <ISO 8601 timestamp>
+            stages.spec.spec_path = "{{output_dir}}/bundle-spec.md"
+
+          Return only the path to the spec file as the output value.
+        output: "spec_path"
+        timeout: 600
+        on_error: "fail"
+
+  # ============================================================================
+  # STAGE 2: Plan
+  # Write an implementation plan from the approved spec.
+  # If spec_path is missing or empty, escalate to bundle-spec via takeover.
+  # No approval gate — autonomous track.
+  # ============================================================================
+  - name: "plan"
+    steps:
+      - id: "write-plan"
+        agent: "bundlewizard:bundle-plan-writer"
+        prompt: |
+          AUTONOMOUS CONTINUATION — no human approval gates apply.
+
+          ── Inputs ───────────────────────────────────────────────────────────
+          SPEC PATH:   {{spec_path}}
+          OUTPUT DIR:  {{output_dir}}
+          TARGET:      {{target}}
+          TIER:        {{tier}}
+          PATH DECISION: {{path_decision}}
+          ─────────────────────────────────────────────────────────────────────
+
+          STEP 1 — Validate spec path:
+          Verify that {{spec_path}} exists and is non-empty. If it does not exist:
+            a. Read {{output_dir}}/STATE.yaml (if present).
+            b. Set takeover.status = "escalated"
+               Set takeover.recommended_entry = "bundle-spec"
+               Set takeover.explanation = "spec_path missing or empty — spec stage did
+                 not complete successfully."
+            c. Write STATE.yaml back.
+            d. Return an error: "TAKEOVER REQUESTED: spec file not found at {{spec_path}}.
+               Re-enter at bundle-spec."
+
+          STEP 2 — Write the plan:
+          Read {{spec_path}} carefully. Produce a concrete implementation plan at:
+            {{output_dir}}/bundle-plan.md
+
+          The plan MUST include:
+          - File-by-file generation order (create) or ordered renovation tasks (improve)
+          - Dependencies between files (what must exist before what)
+          - For each file: exact path, what it should contain, validation check
+          - Task ordering by dependency graph
+          - Estimated number of convergence iterations
+
+          STEP 3 — Update STATE.yaml:
+          Update {{output_dir}}/STATE.yaml:
+            stages.plan.status = "completed"
+            stages.plan.completed_at = <ISO 8601 timestamp>
+            stages.plan.plan_path = "{{output_dir}}/bundle-plan.md"
+
+          Return only the path to the plan file as the output value.
+        output: "plan_path"
+        timeout: 600
+        on_error: "fail"
+
+  # ============================================================================
+  # STAGE 3: Execute
+  # Invoke bundle-refinement-loop as a sub-recipe.
+  # Iterates generate/critique/refine/evaluate until convergence.
+  # This stage reuses bundlewizard:recipes/bundle-refinement-loop.yaml —
+  # do NOT duplicate convergence logic.
+  # No approval gate — autonomous track.
+  # ============================================================================
+  - name: "execute"
+    steps:
+      - id: "run-refinement-loop"
+        type: recipe
+        recipe: "bundlewizard:recipes/bundle-refinement-loop.yaml"
+        context:
+          spec_path: "{{spec_path}}"
+          plan_path: "{{plan_path}}"
+          output_path: "{{output_dir}}/bundle"
+          converged: "false"
+          iteration: "0"
+        output: "refinement_result"
+        timeout: 3600
+        on_error: "continue"
+
+      # ------------------------------------------------------------------------
+      # Record the execute outcome into STATE.yaml so that downstream stages
+      # (verify, finish) read accurate data — not stale defaults.
+      # Do NOT re-run convergence logic here; only persist the loop result.
+      # ------------------------------------------------------------------------
+      - id: "record-execute-outcome"
+        agent: "bundlewizard:bundle-packager"
+        prompt: |
+          AUTONOMOUS CONTINUATION — record the execute stage outcome into STATE.yaml.
+          Do NOT re-run any convergence logic. Only persist the result returned by
+          the refinement loop so that the finish stage reads accurate data.
+
+          ── Inputs ───────────────────────────────────────────────────────────────────
+          OUTPUT DIR:        {{output_dir}}
+          REFINEMENT RESULT: {{refinement_result}}
+          ─────────────────────────────────────────────────────────────────────────────
+
+          STEP 1 — Parse refinement_result:
+          Read {{refinement_result}} and extract the following fields:
+            - iterations  : total convergence iterations completed (integer; default 0)
+            - converged   : whether the loop converged (true/false)
+            - best_score  : best evaluation score achieved (float); omit key if absent
+
+          STEP 2 — Update STATE.yaml:
+          Read {{output_dir}}/STATE.yaml (create the file if it does not exist yet).
+          Set these keys:
+            stages.execute.status       = "completed"
+            stages.execute.completed_at = <current ISO 8601 timestamp>
+            stages.execute.iterations   = <iterations extracted above>
+            stages.execute.converged    = <converged extracted above>
+            stages.execute.best_score   = <best_score extracted above, if present>
+          Write the updated STATE.yaml back to disk.
+
+          STEP 3 — Return confirmation:
+          Return a one-line confirmation in the form:
+            "execute outcome recorded: <iterations> iterations, converged=<converged>, best_score=<score or N/A>"
+        output: "execute_outcome"
+        timeout: 120
+        on_error: "continue"
+
+  # ============================================================================
+  # STAGE 4: Verify
+  # Independent three-level verification by bundle-evaluator.
+  # Level 1 failure  → takeover paused, recommended_entry=bundle-execute, error
+  # Level 2/3 below threshold → takeover paused, recommended_entry=bundle-execute,
+  #                             report returned (not an error — caller decides)
+  # All pass → takeover.status=not_needed, verify completed
+  # No approval gate — autonomous track.
+  # ============================================================================
+  - name: "verify"
+    steps:
+      - id: "run-verification"
+        agent: "bundlewizard:bundle-evaluator"
+        prompt: |
+          AUTONOMOUS CONTINUATION — independent post-generation verification.
+          This is NOT the evaluator from the convergence loop. Evaluate with fresh eyes.
+
+          ── Inputs ───────────────────────────────────────────────────────────
+          SPEC PATH:        {{spec_path}}
+          BUNDLE PATH:      {{output_dir}}/bundle
+          REFINEMENT RESULT: {{refinement_result}}
+          OUTPUT DIR:       {{output_dir}}
+          ─────────────────────────────────────────────────────────────────────
+
+          Run all three verification levels:
+
+          Level 1 (Structural — PASS/FAIL):
+          - Does bundle.md parse cleanly?
+          - Do all agent references resolve?
+          - Are all source URIs valid?
+          - No duplicate context loading? Mode files discoverable?
+          - All convergence-criteria.md structural gates: PASS or FAIL each.
+
+          Level 2 (Philosophical — scored 0.0–1.0, threshold ≥ 0.85):
+          - Thin bundle pattern compliance
+          - Context sink discipline
+          - Agent description quality
+          - Composition hygiene
+          - Delegate to foundation:foundation-expert for authoritative checks.
+
+          Level 3 (Functional — scored 0.0–1.0, threshold ≥ 0.80):
+          - Does the bundle achieve its stated purpose?
+          - Delegate to the appropriate domain expert for functional assessment.
+
+          After all levels are assessed, apply the autonomous takeover logic:
+
+          IF Level 1 FAILS:
+            a. Read/create {{output_dir}}/STATE.yaml.
+            b. Set stages.verify.status = "failed_verification"
+               Set takeover.status = "paused"
+               Set takeover.recommended_entry = "bundle-execute"
+               Set takeover.explanation = "Level 1 structural verification failed — bundle
+                 cannot be loaded or has broken references. Re-enter at bundle-execute."
+            c. Write STATE.yaml.
+            d. Return an error: "VERIFICATION FAILED (Level 1): <details>. See STATE.yaml."
+
+          ELSE IF Level 2 < 0.85 OR Level 3 < 0.80:
+            a. Read/create {{output_dir}}/STATE.yaml.
+            b. Set stages.verify.status = "needs_takeover"
+               Set takeover.status = "paused"
+               Set takeover.recommended_entry = "bundle-execute"
+               Set takeover.explanation = "Verification scores below threshold (L2:
+                 <score>, L3: <score>). Caller may choose to iterate or ship."
+               Set takeover.caller_notes = "If Amplifier is caller: consider re-entering
+                 bundle-refinement-loop with targeted feedback from this report."
+            c. Write STATE.yaml.
+            d. Return the full verification report (NOT an error — let the caller decide).
+
+          ELSE (all levels pass):
+            a. Read/create {{output_dir}}/STATE.yaml.
+            b. Set stages.verify.status = "completed"
+               Set stages.verify.completed_at = <ISO 8601 timestamp>
+               Set stages.verify.level_1 = "PASS"
+               Set stages.verify.level_2 = <score>
+               Set stages.verify.level_3 = <score>
+               Set takeover.status = "not_needed"
+            c. Write STATE.yaml.
+            d. Return the full verification report.
+
+          Return the complete verification report as the output value.
+        output: "verification_report"
+        timeout: 900
+        on_error: "fail"
+
+  # ============================================================================
+  # STAGE 5: Finish
+  # Package the bundle if takeover.status allows it.
+  # If paused or escalated: return structured takeover summary, set needs_takeover.
+  # If not_needed: package, stamp generated_by block, update README, git, deliver.
+  # When Amplifier is the caller, include the hot-compose stanza in the summary.
+  # No approval gate — autonomous track.
+  # ============================================================================
+  - name: "finish"
+    steps:
+      - id: "package-bundle"
+        agent: "bundlewizard:bundle-packager"
+        prompt: |
+          AUTONOMOUS CONTINUATION — final packaging and delivery stage.
+
+          ── Inputs ───────────────────────────────────────────────────────────
+          BUNDLE PATH:         {{output_dir}}/bundle
+          OUTPUT DIR:          {{output_dir}}
+          SPEC PATH:           {{spec_path}}
+          PLAN PATH:           {{plan_path}}
+          TRIGGER REASON:      {{trigger_reason}}
+          PATH DECISION:       {{path_decision}}
+          VERIFICATION REPORT: {{verification_report}}
+          ─────────────────────────────────────────────────────────────────────
+
+          STEP 1 — Check takeover status:
+          Read {{output_dir}}/STATE.yaml. Inspect takeover.status.
+
+          IF takeover.status is "paused" OR "escalated":
+            Do NOT package the bundle. Instead return a structured takeover summary:
+
+            ```
+            TAKEOVER SUMMARY
+            ════════════════════════════════════════════════════════════
+            Status:              <takeover.status>
+            Current stage:       finish (packaging blocked)
+            Recommended entry:   <takeover.recommended_entry>
+            Explanation:         <takeover.explanation>
+
+            Artifact paths:
+              Spec:    {{spec_path}}
+              Plan:    {{plan_path}}
+              Bundle:  {{output_dir}}/bundle  (unpackaged)
+              STATE:   {{output_dir}}/STATE.yaml
+
+            Caller notes:        <takeover.caller_notes>
+
+            To continue:
+              - Re-enter at <takeover.recommended_entry> with the paths above.
+              - Or inspect the verification report for targeted guidance.
+            ════════════════════════════════════════════════════════════
+            ```
+
+            Update STATE.yaml:
+              stages.finish.status = "needs_takeover"
+
+            Return the takeover summary as the output value.
+
+          STEP 2 (only if takeover.status == "not_needed" or ""):
+          Package the bundle for delivery:
+
+          2a. Add generated_by block to bundle.md frontmatter:
+              ```yaml
+              generated_by:
+                tool: bundlewizard
+                mode: autonomous
+                triggered_by: <session ID from STATE.yaml session.id>
+                trigger_reason: {{trigger_reason}}
+                convergence:
+                  iterations: <stages.execute.iterations from STATE.yaml>
+                  level_1: PASS
+                  level_2: <stages.verify.level_2 from STATE.yaml>
+                  level_3: <stages.verify.level_3 from STATE.yaml>
+              ```
+
+          2b. Generate or update README.md with usage instructions for the new bundle.
+
+          2c. Default local git packaging behavior.
+              Inspect {{path_decision}} and apply the matching case:
+
+              CREATE NEW path (path_decision == "create_new"):
+              - Run git init if the output dir is not already a repo
+              - Stage all files: git add .
+              - First commit: git commit -m "feat: initial bundle generation by bundlewizard"
+
+              IMPROVE / REBUILD path (all other path_decision values):
+              - Create feature branch: git checkout -b bundlewizard/improvements
+              - Stage changes: git add .
+              - Commit: git commit -m "feat: bundle improvements by bundlewizard"
+
+          2d. Update STATE.yaml:
+              stages.finish.status = "completed"
+              stages.finish.completed_at = <ISO 8601 timestamp>
+              stages.finish.delivery = "local-git"
+
+          2e. Return a completion summary:
+              ```
+              AUTONOMOUS BUNDLE COMPLETE
+              ════════════════════════════════════════════════════════════
+              Bundle:      <bundle name>
+              Tier:        {{tier}}
+              Location:    {{output_dir}}/bundle
+              Trigger:     {{trigger_reason}}
+
+              Capability summary:
+                <one-paragraph description of what capability this bundle provides>
+
+              Convergence:
+                Iterations: <N>
+                Level 1:    PASS
+                Level 2:    <score>
+                Level 3:    <score>
+
+              How to compose it (hot-compose stanza for Amplifier callers):
+                includes:
+                  - source: <path or URI to the new bundle>
+
+              Delivery: local-git commit staged. Push or open a PR when ready.
+              ════════════════════════════════════════════════════════════
+              ```
+
+              If Amplifier is the caller, lead with:
+              "I needed <capability>. I built it autonomously. Here's what I created:
+              [summary]. Continuing with the original task."
+
+          Return the completion summary as the output value.
+        output: "completion_summary"
+        timeout: 600
+        on_error: "fail"
