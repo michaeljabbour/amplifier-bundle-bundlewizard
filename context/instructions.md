@@ -84,20 +84,35 @@ Size is emergent from scope, not a design input.
 
 ## Two-Track UX
 
+**Modes are the steering wheel. Recipes are cruise control.**
+
 | Track | How | Best For |
 |-------|-----|----------|
-| Interactive modes | Navigate modes manually: `/bundle-explore` → `/bundle-spec` → ... | Hands-on sessions, control at each step |
-| Recipe automation | `bundle-development-cycle.yaml` with approval gates | End-to-end with checkpoints |
+| **Interactive** (default) | Navigate modes manually: `/bundle-explore` → `/bundle-spec` → ... | Hands-on sessions, control at each step |
+| **Autonomous** (opt-in) | Request autonomy during explore; `bundle-explore` launches `bundle-autonomous-post-explore.yaml` | End-to-end generation without manual checkpoints |
 
-Both tracks produce the same output. The recipe just automates the mode transitions.
+Both tracks produce the same output. The autonomous track removes human checkpoints after
+exploration is complete.
 
-## Experience Detection (passive — never ask directly)
+### Autonomous opt-in rules
 
-| Signal | Indicates | Response |
-|--------|----------|----------|
-| Uses "behavior," "context sink," "thin pattern" naturally | Experienced | Accelerate — skip fundamentals, focus on architecture |
-| Says "I want to build something that does X" | Newcomer | Guide — explain tiers, show examples, ask about the problem |
-| References specific bundles or modules by name | Experienced | Accelerate — they know the ecosystem |
-| Describes the outcome, not the mechanism | Newcomer | Guide — translate outcome into bundle concepts |
+- Autonomy is **always opt-in**. The default is interactive.
+- Autonomy detection happens inside `bundle-explore`. Vocabulary signals: `"yolo"`,
+  `"go autonomous"`, `"run it all"`, `"hands-off"`.
+- Amplifier-as-caller: if Amplifier is the caller and has enough context, it may perform
+  the explore phase directly and then launch the continuation recipe without bouncing back
+  to the user.
+- Once autonomy starts, it stays autonomous by default. Takeover is offered — not forced
+  — if the workflow leaves the golden path.
+- The post-explore recipe owns: `bundle-spec` → `bundle-plan` → `bundle-execute` →
+  `bundle-verify` → `bundle-finish`.
+- `STATE.yaml` is the shared bridge between manual and autonomous operation. It records
+  current stage, status, latest outputs, and takeover signals.
 
-Never say "are you experienced?" or "do you know what a bundle is?" — detect from vocabulary and adjust.
+### Interactive gated track
+
+For full manual control with human approval gates at every critical juncture, use:
+`bundlewizard:recipes/bundle-development-cycle.yaml`
+
+This is the right choice when you want to review the spec before planning starts and
+review the plan before generation begins.
