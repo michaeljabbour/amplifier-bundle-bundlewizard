@@ -70,11 +70,12 @@ def _parse_mode_frontmatter(path: Path) -> dict:
 
 
 def test_bundle_bot_does_not_exist():
-    """bundle-bot.md must NOT exist — it's replaced by the autonomous behavior."""
+    """bundle-bot.md must NOT exist — autonomy is now handled by the contained post-explore recipe model."""
     bot_path = MODES_DIR / "bundle-bot.md"
     assert not bot_path.exists(), (
         "modes/bundle-bot.md still exists! It should have been deleted. "
-        "The god mode is replaced by behaviors/bundlewizard-autonomous.yaml."
+        "Autonomy is now handled by the contained post-explore recipe model, "
+        "not a god-mode bundle-bot file."
     )
 
 
@@ -269,7 +270,7 @@ def test_autonomous_protocol_exists():
     path = CONTEXT_DIR / "autonomous-protocol.md"
     assert path.exists(), (
         "context/autonomous-protocol.md does not exist. "
-        "This file provides behavioral overrides for autonomous operation."
+        "This file provides recipe/autonomy policy context for post-explore continuation."
     )
 
 
