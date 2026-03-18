@@ -47,6 +47,11 @@ complete the explore phase, Amplifier should do so directly. Do NOT bounce back 
 user just because autonomy was requested. "Explore" means resolve the problem framing,
 path, constraints, and target — not "go ask a human." Ask only when information is
 genuinely missing.
+
+UPGRADE DETECTION: If the user says "upgrade", "refresh", "migrate", or "bring up to date"
+— or if the target bundle has legacy bundlewizard provenance (bundle.bundlewizard instead
+of bundle.generated_by) — treat this as an upgrade request. Upgrade is a specialization of
+"improve existing," not a separate workflow.
 </CRITICAL>
 
 <HARD-GATE>
@@ -120,6 +125,11 @@ known_constraints: ""      # Constraints discovered (scope limits, dependencies,
 autonomy_requested: false  # True if user or Amplifier caller requested autonomy
 trigger_reason: ""         # Why autonomy was requested (e.g., "yolo", "amplifier-caller")
 open_questions: ""         # Any remaining unresolved questions (must be empty before launch)
+upgrade_requested: false  # True if upgrade intent detected or legacy provenance found
+upgrade_reason: ""         # "explicit_intent" | "legacy_provenance_detected" | "schema_mismatch"
+provenance_shape: ""       # "legacy_bundlewizard" | "generated_by_v1" | "none"
+source_schema_version: ""  # Schema version found in target (empty if none)
+target_schema_version: "1" # Current canonical schema version
 ```
 
 ## Transition
@@ -149,7 +159,12 @@ recipes(operation='execute',
           "known_constraints": "<resolved>",
           "trigger_reason": "<resolved>",
           "open_questions": "",
-          "output_dir": "output"
+          "output_dir": "output",
+          "upgrade_requested": "<resolved>",
+          "upgrade_reason": "<resolved>",
+          "provenance_shape": "<resolved>",
+          "source_schema_version": "<resolved>",
+          "target_schema_version": "1"
         })
 ```
 Do NOT transition to bundle-spec when launching the recipe. The recipe owns the
