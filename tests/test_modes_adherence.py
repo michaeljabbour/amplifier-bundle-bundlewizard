@@ -1,9 +1,10 @@
-"""Structural contract tests for bundlewizard modes and behaviors.
+"""Structural contract tests for bundlewizard modes and autonomy handoff files.
 
 These tests verify:
 - bundle-bot.md does NOT exist (regression guard)
 - All 7 pipeline modes have correct transitions and allow_clear
-- Autonomous behavior YAML exists with correct config
+- The abandoned autonomous behavior YAML does NOT exist
+- The post-explore autonomy handoff contract is present
 - Autonomous protocol context file exists with audit trail
 - Instructions don't reference bundle-bot
 """
@@ -19,17 +20,44 @@ REPO_ROOT = Path(__file__).parent.parent
 MODES_DIR = REPO_ROOT / "modes"
 BEHAVIORS_DIR = REPO_ROOT / "behaviors"
 CONTEXT_DIR = REPO_ROOT / "context"
+TEMPLATES_DIR = REPO_ROOT / "templates"
+RECIPES_DIR = REPO_ROOT / "recipes"
 
 
 # Expected transition graph for all 7 pipeline modes
 EXPECTED_TRANSITIONS = {
-    "bundle-explore": {"allowed": ["bundle-spec", "bundle-debug"], "allow_clear": False},
-    "bundle-spec": {"allowed": ["bundle-plan", "bundle-explore", "bundle-debug"], "allow_clear": False},
-    "bundle-plan": {"allowed": ["bundle-execute", "bundle-spec", "bundle-debug"], "allow_clear": False},
-    "bundle-execute": {"allowed": ["bundle-verify", "bundle-debug"], "allow_clear": False},
-    "bundle-verify": {"allowed": ["bundle-finish", "bundle-debug", "bundle-execute"], "allow_clear": False},
+    "bundle-explore": {
+        "allowed": ["bundle-spec", "bundle-debug"],
+        "allow_clear": False,
+    },
+    "bundle-spec": {
+        "allowed": ["bundle-plan", "bundle-explore", "bundle-debug"],
+        "allow_clear": False,
+    },
+    "bundle-plan": {
+        "allowed": ["bundle-execute", "bundle-spec", "bundle-debug"],
+        "allow_clear": False,
+    },
+    "bundle-execute": {
+        "allowed": ["bundle-verify", "bundle-debug"],
+        "allow_clear": False,
+    },
+    "bundle-verify": {
+        "allowed": ["bundle-finish", "bundle-debug", "bundle-execute"],
+        "allow_clear": False,
+    },
     "bundle-finish": {"allowed": [], "allow_clear": True},
-    "bundle-debug": {"allowed": ["bundle-explore", "bundle-spec", "bundle-plan", "bundle-execute", "bundle-verify", "bundle-finish"], "allow_clear": False},
+    "bundle-debug": {
+        "allowed": [
+            "bundle-explore",
+            "bundle-spec",
+            "bundle-plan",
+            "bundle-execute",
+            "bundle-verify",
+            "bundle-finish",
+        ],
+        "allow_clear": False,
+    },
 }
 
 
@@ -45,8 +73,8 @@ def test_bundle_bot_does_not_exist():
     """bundle-bot.md must NOT exist — it's replaced by the autonomous behavior."""
     bot_path = MODES_DIR / "bundle-bot.md"
     assert not bot_path.exists(), (
-        f"modes/bundle-bot.md still exists! It should have been deleted. "
-        f"The god mode is replaced by behaviors/bundlewizard-autonomous.yaml."
+        "modes/bundle-bot.md still exists! It should have been deleted. "
+        "The god mode is replaced by behaviors/bundlewizard-autonomous.yaml."
     )
 
 
@@ -78,71 +106,161 @@ def test_pipeline_mode_allow_clear():
         mode_path = MODES_DIR / f"{mode_name}.md"
         frontmatter = _parse_mode_frontmatter(mode_path)
         mode_config = frontmatter["mode"]
-        actual = mode_config.get("allow_clear", True)  # default is True per ModeDefinition
+        actual = mode_config.get(
+            "allow_clear", True
+        )  # default is True per ModeDefinition
         assert actual == expected["allow_clear"], (
             f"{mode_name}: allow_clear mismatch. "
             f"Expected {expected['allow_clear']}, got {actual}"
         )
 
 
-def test_autonomous_behavior_exists():
-    """The autonomous behavior YAML must exist."""
+def test_autonomous_behavior_does_not_exist():
+    """behaviors/bundlewizard-autonomous.yaml must NOT exist.
+
+    The upstream-dependent autonomous behavior has been replaced by a bundle-local
+    post-explore continuation recipe (recipes/bundle-autonomous-post-explore.yaml).
+    Shipping this file would re-introduce an upstream amplifier-bundle-modes dependency.
+    """
     path = BEHAVIORS_DIR / "bundlewizard-autonomous.yaml"
-    assert path.exists(), (
-        "behaviors/bundlewizard-autonomous.yaml does not exist. "
-        "This file provides the autonomous operating profile."
+    assert not path.exists(), (
+        "behaviors/bundlewizard-autonomous.yaml still exists. "
+        "This upstream-dependent file must be deleted. "
+        "Autonomy is now handled by recipes/bundle-autonomous-post-explore.yaml."
     )
 
 
-def test_autonomous_behavior_config():
-    """Autonomous behavior must set gate_policy: auto and autonomous: true."""
-    path = BEHAVIORS_DIR / "bundlewizard-autonomous.yaml"
-    if not path.exists():
-        pytest.skip("bundlewizard-autonomous.yaml not yet created")
+def test_state_yaml_has_autonomy_fields():
+    """templates/STATE.yaml must include autonomy handoff and takeover contract fields."""
+    path = TEMPLATES_DIR / "STATE.yaml"
+    assert path.exists(), "templates/STATE.yaml does not exist"
     content = yaml.safe_load(path.read_text(encoding="utf-8"))
 
-    # Check hooks-mode autonomous flag
-    hooks = content.get("hooks", [])
-    hooks_mode_config = None
-    for hook in hooks:
-        if hook.get("module") == "hooks-mode":
-            hooks_mode_config = hook.get("config", {})
-            break
-    assert hooks_mode_config is not None, "hooks-mode not found in autonomous behavior"
-    assert hooks_mode_config.get("autonomous") is True, (
-        "hooks-mode config must have autonomous: true"
+    session = content.get("session", {})
+    assert "autonomy_requested" in session, (
+        "STATE.yaml session block must have an autonomy_requested field"
+    )
+    assert "trigger_reason" in session, (
+        "STATE.yaml session block must have a trigger_reason field"
     )
 
-    # Check tool-mode gate_policy
-    tools = content.get("tools", [])
-    tool_mode_config = None
-    for tool in tools:
-        if tool.get("module") == "tool-mode":
-            tool_mode_config = tool.get("config", {})
-            break
-    assert tool_mode_config is not None, "tool-mode not found in autonomous behavior"
-    assert tool_mode_config.get("gate_policy") == "auto", (
-        "tool-mode config must have gate_policy: auto"
+    assert "takeover" in content, "STATE.yaml must have a top-level takeover section"
+    takeover = content["takeover"]
+    assert "status" in takeover, "STATE.yaml takeover must have a status field"
+    assert "recommended_entry" in takeover, (
+        "STATE.yaml takeover must have a recommended_entry field"
+    )
+    assert "explanation" in takeover, (
+        "STATE.yaml takeover must have an explanation field"
     )
 
 
-def test_autonomous_behavior_agents_match():
-    """Autonomous behavior must register the same 10 agents as interactive."""
-    interactive_path = BEHAVIORS_DIR / "bundlewizard.yaml"
-    autonomous_path = BEHAVIORS_DIR / "bundlewizard-autonomous.yaml"
-    if not autonomous_path.exists():
-        pytest.skip("bundlewizard-autonomous.yaml not yet created")
+def test_autonomous_protocol_is_recipe_policy():
+    """context/autonomous-protocol.md must be repurposed as recipe/autonomy policy.
 
-    interactive = yaml.safe_load(interactive_path.read_text(encoding="utf-8"))
-    autonomous = yaml.safe_load(autonomous_path.read_text(encoding="utf-8"))
+    It must NOT contain mode-level behavioral override instructions (old design).
+    It MUST reference the post-explore continuation recipe.
+    """
+    path = CONTEXT_DIR / "autonomous-protocol.md"
+    assert path.exists(), "context/autonomous-protocol.md does not exist"
+    content = path.read_text(encoding="utf-8")
 
-    interactive_agents = sorted(interactive.get("agents", {}).get("include", []))
-    autonomous_agents = sorted(autonomous.get("agents", {}).get("include", []))
+    assert "bundle-autonomous-post-explore" in content, (
+        "autonomous-protocol.md must reference bundle-autonomous-post-explore "
+        "to establish it as recipe/autonomy policy context"
+    )
+    assert "When any mode instruction says" not in content, (
+        "autonomous-protocol.md still contains mode-level behavioral override language. "
+        "This file must be repurposed as recipe policy context, not a mode-level override."
+    )
 
-    assert interactive_agents == autonomous_agents, (
-        f"Agent lists differ between interactive and autonomous behaviors.\n"
-        f"Interactive: {interactive_agents}\n"
-        f"Autonomous:  {autonomous_agents}"
+
+def test_explore_mode_is_handoff_gate():
+    """modes/bundle-explore.md must act as a handoff gate.
+
+    It must detect autonomy_requested and reference the post-explore recipe.
+    """
+    path = MODES_DIR / "bundle-explore.md"
+    assert path.exists(), "modes/bundle-explore.md does not exist"
+    content = path.read_text(encoding="utf-8")
+
+    assert "autonomy_requested" in content, (
+        "bundle-explore.md must detect autonomy_requested to decide the handoff path"
+    )
+    assert "bundle-autonomous-post-explore" in content, (
+        "bundle-explore.md must reference bundle-autonomous-post-explore "
+        "for launching autonomous continuation"
+    )
+
+
+def test_autonomous_post_explore_recipe_exists():
+    """recipes/bundle-autonomous-post-explore.yaml must exist."""
+    path = RECIPES_DIR / "bundle-autonomous-post-explore.yaml"
+    assert path.exists(), (
+        "recipes/bundle-autonomous-post-explore.yaml does not exist. "
+        "This recipe is the autonomous continuation engine for post-explore operation."
+    )
+
+
+def test_autonomous_post_explore_recipe_stages():
+    """The post-explore recipe must contain all 5 required continuation stages."""
+    path = RECIPES_DIR / "bundle-autonomous-post-explore.yaml"
+    if not path.exists():
+        pytest.skip("bundle-autonomous-post-explore.yaml not yet created")
+    content = yaml.safe_load(path.read_text(encoding="utf-8"))
+
+    stages = [s["name"] for s in content.get("stages", [])]
+    required = {"spec", "plan", "execute", "verify", "finish"}
+    missing = required - set(stages)
+    assert not missing, (
+        f"bundle-autonomous-post-explore.yaml is missing required stages: {missing}. "
+        f"Found: {stages}"
+    )
+
+
+def test_autonomous_post_explore_recipe_no_required_approval_gates():
+    """The post-explore recipe must NOT have required: true approval gates.
+
+    It is the autonomous track — human approval gates defeat the purpose.
+    Takeover points are offered via STATE.yaml, not forced via approval gates.
+    """
+    path = RECIPES_DIR / "bundle-autonomous-post-explore.yaml"
+    if not path.exists():
+        pytest.skip("bundle-autonomous-post-explore.yaml not yet created")
+    content = yaml.safe_load(path.read_text(encoding="utf-8"))
+
+    for stage in content.get("stages", []):
+        approval = stage.get("approval", {})
+        assert approval.get("required", False) is not True, (
+            f"Stage '{stage['name']}' has required: true approval gate. "
+            "The autonomous recipe must not force human approval gates."
+        )
+
+
+def test_autonomous_post_explore_recipe_reuses_refinement_loop():
+    """The post-explore recipe must reuse bundle-refinement-loop for execution.
+
+    Do not duplicate the convergence loop — reuse the existing sub-recipe.
+    """
+    path = RECIPES_DIR / "bundle-autonomous-post-explore.yaml"
+    if not path.exists():
+        pytest.skip("bundle-autonomous-post-explore.yaml not yet created")
+    content = path.read_text(encoding="utf-8")
+
+    assert "bundle-refinement-loop" in content, (
+        "bundle-autonomous-post-explore.yaml must invoke bundle-refinement-loop.yaml "
+        "for the execute stage — do not duplicate convergence logic."
+    )
+
+
+def test_instructions_describes_opt_in_autonomy():
+    """context/instructions.md must describe the opt-in autonomy-after-explore path."""
+    path = CONTEXT_DIR / "instructions.md"
+    content = path.read_text(encoding="utf-8")
+
+    assert "bundle-autonomous-post-explore" in content, (
+        "context/instructions.md must reference bundle-autonomous-post-explore.yaml "
+        "in its two-track UX description"
     )
 
 
