@@ -78,7 +78,7 @@ Higher-priority results take precedence. A `deny` from any hook always wins.
 | `deny` | Abort the current operation immediately. Return an error result to the caller. Do not proceed with the provider call or tool execution. |
 | `modify` | Replace the event payload with the modified payload provided by the hook before proceeding. |
 | `inject_context` | Append the hook-supplied context message(s) to the message list before the next provider call. |
-| `ask_user` | Pause execution, surface the hook's question to the user, and wait for a response before continuing. |
+| `ask_user` | Pause execution, surface the hook's question to the user (via `ask_user`, a method on `ExecutionContext`), and wait for a response before continuing. |
 | `continue` | No action required. Proceed normally. |
 
 ### Resolving Multiple HookResults
@@ -88,8 +88,9 @@ results = await hooks.run("tool:pre", payload)
 
 # Priority resolution
 if any(r.type == "deny" for r in results):
-    return deny_result(results)
+    return deny_result(results)  # deny_result is a kernel utility; see amplifier_core.results
 
+# If multiple hooks return `modify`, payloads are applied in hook registration order (last-write-wins).
 for r in results:
     if r.type == "modify":
         payload = r.modified_payload
