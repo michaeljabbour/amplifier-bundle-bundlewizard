@@ -57,7 +57,7 @@ of bundle.generated_by) — treat this as an upgrade request. Upgrade is a speci
 <HARD-GATE>
 Do NOT delegate to any generation agent, invoke any generation recipe, OR transition to
 bundle-spec OR launch bundle-autonomous-post-explore until you have:
-1. Determined whether this is "create new," "improve existing," or "rebuild from reference"
+1. Determined whether this is "create new," "improve existing," "rebuild from reference," or "design my experience"
 2. Gathered enough context to write a meaningful spec
 3. Resolved all open blockers (none remaining in open_questions)
 4. Determined whether autonomy was requested
@@ -96,6 +96,14 @@ For **Rebuild from Reference**:
 - [ ] Autonomy requested? Detect from user vocabulary or Amplifier caller context
 - [ ] All blockers resolved — ready for transition
 
+For **Design My Experience**:
+- [ ] Determine sub-path: D1 (Foundation + Customize), D2 (Start from Scratch), or D3 (Adapt Existing)
+- [ ] If D3: redirect to Rebuild from Reference checklist with experience_lens flag — stop here
+- [ ] If D1: gather identity, provider, persona, keep/drop behaviors, add capabilities, naming
+- [ ] If D2: gather identity, provider, persona, orchestrator, context manager, tools, hooks, agents, system instructions
+- [ ] Autonomy requested? Detect from user vocabulary or Amplifier caller context
+- [ ] All blockers resolved — ready for transition
+
 ## Experience Detection
 
 Detect experience level passively from vocabulary and adjust your depth:
@@ -117,7 +125,7 @@ Before transitioning, resolve these fields. They become the input to either the 
 manual mode or the autonomous continuation recipe:
 
 ```yaml
-path_decision: ""          # "create_new" | "improve_existing" | "rebuild_from_reference"
+path_decision: ""          # "create_new" | "improve_existing" | "rebuild_from_reference" | "design_my_experience"
 target: ""                 # Bundle name (create) or path/URL (improve/rebuild)
 tier: ""                   # "behavior" | "bundle" | "application_bundle"
 summary_of_requirements: "" # What was learned in explore
@@ -130,6 +138,8 @@ upgrade_reason: ""         # "explicit_intent" | "legacy_provenance_detected" | 
 provenance_shape: ""       # "legacy_bundlewizard" | "generated_by_v1" | "none"
 source_schema_version: ""  # Schema version found in target (empty if none)
 target_schema_version: "1" # Current canonical schema version
+experience_sub_path: ""    # "d1_foundation_customize" | "d2_start_from_scratch" | "d3_adapt_existing" (Path D only)
+experience_lens: false     # True when D3 redirects to Path C — frames rebuild as experience customization
 ```
 
 ## Transition
@@ -164,7 +174,9 @@ recipes(operation='execute',
           "upgrade_reason": "<resolved>",
           "provenance_shape": "<resolved>",
           "source_schema_version": "<resolved>",
-          "target_schema_version": "1"
+          "target_schema_version": "1",
+          "experience_sub_path": "<resolved>",
+          "experience_lens": "<resolved>"
         })
 ```
 Do NOT transition to bundle-spec when launching the recipe. The recipe owns the
