@@ -214,6 +214,30 @@ def test_behavior_includes_orchestrator_advisor():
 # ---------------------------------------------------------------------------
 
 
+def test_instructions_mention_orchestrator_advisor():
+    """context/instructions.md must mention the orchestrator-advisor agent."""
+    if not INSTRUCTIONS_FILE.exists():
+        pytest.skip("context/instructions.md does not exist yet")
+    content = INSTRUCTIONS_FILE.read_text(encoding="utf-8")
+    assert "orchestrator-advisor" in content, (
+        "context/instructions.md must contain the string 'orchestrator-advisor'. "
+        "The instructions must guide the orchestrator on when to delegate "
+        "to the orchestrator-advisor for loop-shape decisions."
+    )
+
+
+def test_instructions_has_orchestrator_module_tier():
+    """context/instructions.md must name the Orchestrator Module tier."""
+    if not INSTRUCTIONS_FILE.exists():
+        pytest.skip("context/instructions.md does not exist yet")
+    content = INSTRUCTIONS_FILE.read_text(encoding="utf-8")
+    assert "Orchestrator Module" in content, (
+        "context/instructions.md must contain the string 'Orchestrator Module'. "
+        "The Orchestrator Module must be a named tier in the Output Tiers table "
+        "so users and the advisor can reference it by name."
+    )
+
+
 def test_instructions_references_orchestrator_advisor():
     """context/instructions.md must reference the orchestrator-advisor agent."""
     if not INSTRUCTIONS_FILE.exists():

@@ -91,8 +91,21 @@ Interview flow:
 | **Behavior** | Reusable capability package (YAML + context + maybe agents). Composed into bundles via `includes:`. | Adding a capability to an existing bundle |
 | **Bundle** | Standalone bundle with bundle.md, behaviors, agents, context. A complete product. | A focused tool/capability that stands alone |
 | **Application Bundle** | Full-featured with modes, recipes, skills, possibly modules. What harness-machine and superpowers are. | A complete development workflow or domain system |
+| **Orchestrator Module** | Standalone Python module implementing the Orchestrator protocol (`amplifier-module-loop-{name}`). Includes `mount()`, required events, hook handling, and tests. | When the orchestrator-advisor confirms a new loop shape is genuinely needed |
 
 Size is emergent from scope, not a design input.
+
+## Orchestrator Modules
+
+When a user describes a need that involves **changing the shape of the execution loop** — parallel tool dispatch, multi-provider alternation, phased execution, convergence loops — the `orchestrator-advisor` is consulted during the explore phase.
+
+The advisor applies the 12-point kernel-derived litmus test and returns one of three verdicts:
+
+- **Compose** — the need can be satisfied with hooks, recipes, or configuration. No new orchestrator.
+- **Extend** — an existing orchestrator module should be modified or subclassed.
+- **Create** — a new Orchestrator Module is genuinely needed.
+
+**Create verdicts require adversarial validation.** Before any spec work begins, both `core:core-expert` and `amplifier:amplifier-expert` must confirm the new loop shape cannot be satisfied by composition or extension. This prevents over-engineering — new orchestrators carry maintenance cost and protocol compliance burden.
 
 ## Two-Track UX
 
