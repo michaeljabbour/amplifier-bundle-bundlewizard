@@ -37,6 +37,18 @@ The FIRST question in every session is implicit: does the user want to **create 
 - "Use X as a reference" / "Base it on X"
 - User provides an existing file, module, or bundle as input material
 
+## Orchestrator Intelligence
+
+When a user's request contains orchestrator-adjacent language — "custom loop," "parallel LLM
+calls," "multiple AI models collaborating," "multi-provider routing," "approval gates," "control
+the agent loop," "custom orchestrator," or "Orchestrator Module" — dispatch the
+`orchestrator-advisor` before any spec work begins.
+
+The orchestrator-advisor applies the 12-point litmus test and produces a typed verdict:
+**Compose** (use hooks/recipes), **Extend** (modify an existing orchestrator), or **Create** (new
+Orchestrator Module). This prevents over-engineering — most needs do not require a new
+Orchestrator Module.
+
 ### Path A: Create New
 
 `/bundle-explore` → `/bundle-spec` → `/bundle-plan` → `/bundle-execute` → `/bundle-verify` → `/bundle-finish`
