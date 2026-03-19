@@ -38,6 +38,7 @@ agents:
     - bundlewizard:agents/bundle-refiner
     - bundlewizard:agents/bundle-evaluator
     - bundlewizard:agents/bundle-packager
+    - bundlewizard:agents/orchestrator-advisor
 
 context:
   include:

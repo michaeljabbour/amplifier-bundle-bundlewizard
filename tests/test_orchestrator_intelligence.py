@@ -191,6 +191,24 @@ def test_behavior_yaml_includes_orchestrator_advisor():
     )
 
 
+def test_behavior_includes_orchestrator_advisor():
+    """behaviors/bundlewizard.yaml agents.include must contain bundlewizard:agents/orchestrator-advisor."""
+    assert BEHAVIOR_FILE.exists(), (
+        f"behaviors/bundlewizard.yaml does not exist at {BEHAVIOR_FILE}"
+    )
+    content = yaml.safe_load(BEHAVIOR_FILE.read_text(encoding="utf-8"))
+    agents_include = content.get("agents", {}).get("include", [])
+    assert "bundlewizard:agents/orchestrator-advisor" in agents_include, (
+        "behaviors/bundlewizard.yaml agents.include must contain the entry "
+        "'bundlewizard:agents/orchestrator-advisor'. "
+        f"Current agents.include has {len(agents_include)} entries: {agents_include}"
+    )
+    assert len(agents_include) == 11, (
+        f"behaviors/bundlewizard.yaml agents.include must have 11 entries (was 10 before "
+        f"orchestrator-advisor was added). Current count: {len(agents_include)}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # 4. Instructions reference orchestrator-advisor and Orchestrator Module tier
 # ---------------------------------------------------------------------------
