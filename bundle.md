@@ -1,7 +1,7 @@
 ---
 bundle:
   name: bundlewizard
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Bundle generation and improvement factory for the Amplifier ecosystem.
     Generates new bundles and improves existing ones through structured
