@@ -1,0 +1,616 @@
+// Bundlewizard Explore Interview Flow v2 — Four-Path Routing
+// Path D: Design My Experience — customize your Amplifier from identity to infrastructure
+//
+// Render: dot -Tpng explore-interview-flow.dot -o explore-interview-flow.png
+//         dot -Tsvg explore-interview-flow.dot -o explore-interview-flow.svg
+
+digraph explore_interview_flow {
+    // ─── GRAPH ATTRIBUTES ───────────────────────────────────────────────
+    rankdir=TB;
+    bgcolor="#0F1117";
+    fontname="Helvetica Neue";
+    fontsize=12;
+    fontcolor="white";
+    pad=0.5;
+    nodesep=0.6;
+    ranksep=0.7;
+    compound=true;
+    newrank=true;
+
+    // Title
+    labelloc=t;
+    label=<
+        <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="22" COLOR="white"><B>Bundlewizard Explore Interview Flow v2</B></FONT></TD></TR>
+            <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#888888">Four-Path Routing — Path D: Design My Experience</FONT></TD></TR>
+            <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="11" COLOR="#555555">customize your Amplifier from identity to infrastructure</FONT></TD></TR>
+        </TABLE>
+    >;
+
+    // ─── DEFAULT NODE/EDGE STYLE ────────────────────────────────────────
+    node [
+        fontname="Helvetica Neue"
+        fontsize=10
+        fontcolor="white"
+        style="filled"
+        color="#333333"
+    ];
+    edge [
+        fontname="Helvetica Neue"
+        fontsize=9
+        fontcolor="#AAAAAA"
+        color="#555555"
+        penwidth=1.2
+    ];
+
+    // =====================================================================
+    // ENTRY
+    // =====================================================================
+    entry [
+        label="User arrives at\n/bundle-explore"
+        shape=oval
+        fillcolor="#1A1D27"
+        color="#FF375F"
+        penwidth=2.0
+        fontsize=12
+        fontcolor="white"
+    ];
+
+    // =====================================================================
+    // FIRST FORK — IMPLICIT DETECTION
+    // =====================================================================
+    fork_main [
+        label=<What brings<BR/>you here?<BR/><FONT POINT-SIZE="7" COLOR="#888888">implicit signal detection</FONT>>
+        shape=diamond
+        fillcolor="#1E2130"
+        color="#FF375F"
+        penwidth=2.0
+        width=2.2
+        height=1.4
+    ];
+
+    // ─── DISAMBIGUATION NODE ────────────────────────────────────────────
+    disambig_main [
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3">
+                <TR><TD><FONT COLOR="#FF375F"><B>⚠ AMBIGUOUS — ASK EXPLICITLY</B></FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#CCCCCC">"Are you looking to:</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#4ADE80"> (a) add a capability to your setup,</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#FACC15"> (b) improve an existing bundle,</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#60A5FA"> (c) rebuild something from a reference, or</FONT></TD></TR>
+                <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#C084FC"> (d) customize your overall Amplifier experience?"</FONT></TD></TR>
+            </TABLE>
+        >
+        shape=box
+        style="filled,rounded"
+        fillcolor="#2A1A1A"
+        color="#FF375F"
+        penwidth=1.5
+    ];
+
+    // ─── SIGNAL DETECTION LABELS ────────────────────────────────────────
+    entry -> fork_main [penwidth=2.0, color="#FF375F"];
+
+    fork_main -> disambig_main [
+        label="signals unclear"
+        style=dashed
+        color="#FF375F"
+        fontcolor="#FF375F"
+    ];
+
+    disambig_main -> fork_main [
+        label="user clarifies"
+        style=dashed
+        color="#888888"
+    ];
+
+    // =====================================================================
+    // PATH A: CREATE NEW (GREEN)
+    // =====================================================================
+    subgraph cluster_path_a {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#4ADE80"><B>Path A: Create New</B></FONT></TD></TR>
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="9" COLOR="#666666">capability-oriented interview</FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#0D1A0D";
+        color="#2D5A2D";
+        penwidth=1.5;
+        fontname="Helvetica Neue";
+
+        a1 [label="1. What problem does\nthis solve? Who uses it?" fillcolor="#1A2E1A" color="#4ADE80"];
+        a2 [label="2. Ecosystem check\n→ delegate to ecosystem-scout" fillcolor="#1A2E1A" color="#4ADE80" style="filled,dashed"];
+        a3 [label="3. What tier?\nBehavior / Bundle / App Bundle" fillcolor="#1A2E1A" color="#4ADE80"];
+        a4 [label="4. What capabilities?\nAgents, tools, modes,\nrecipes, context" fillcolor="#1A2E1A" color="#4ADE80"];
+        a5 [label="5. Delegation decisions\nExisting experts vs\ncarry itself?" fillcolor="#1A2E1A" color="#4ADE80"];
+
+        a_orch_detect [
+            label=<Orchestrator-adjacent<BR/>language detected?>
+            shape=diamond
+            fillcolor="#1A2E1A"
+            color="#4ADE80"
+            width=2.0
+            height=1.0
+        ];
+
+        a6 [label="6. Delegate to\norchestrator-advisor\n(12-point litmus test)" fillcolor="#1A2E1A" color="#4ADE80" style="filled,dashed"];
+        a7 [label="7. Check autonomy\nrequested?" fillcolor="#1A2E1A" color="#4ADE80"];
+        a8 [label="8. Resolve all blockers" fillcolor="#1A2E1A" color="#4ADE80"];
+
+        a1 -> a2 -> a3 -> a4 -> a5 -> a_orch_detect [color="#2E7D32"];
+        a_orch_detect -> a6 [label="yes" color="#4ADE80" fontcolor="#4ADE80"];
+        a_orch_detect -> a7 [label="no" color="#666666" fontcolor="#666666"];
+        a6 -> a7 [color="#2E7D32"];
+        a7 -> a8 [color="#2E7D32"];
+    }
+
+    // =====================================================================
+    // PATH B: IMPROVE EXISTING (GOLD)
+    // =====================================================================
+    subgraph cluster_path_b {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#FACC15"><B>Path B: Improve Existing</B></FONT></TD></TR>
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="9" COLOR="#666666">audit-oriented interview</FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#1A1A0D";
+        color="#5A5A2D";
+        penwidth=1.5;
+        fontname="Helvetica Neue";
+
+        b1 [label="1. Identify bundle\n(path or repo URL)" fillcolor="#2E2E1A" color="#FACC15"];
+        b2 [label="2. Run audit\n→ delegate to bundle-auditor" fillcolor="#2E2E1A" color="#FACC15" style="filled,dashed"];
+        b3 [label="3. Present findings\nstructural · philosophical ·\ncapability gaps" fillcolor="#2E2E1A" color="#FACC15"];
+        b4 [label="4. Select improvements\nall / critical / specific" fillcolor="#2E2E1A" color="#FACC15"];
+        b5 [label="5. New capabilities\nto add?" fillcolor="#2E2E1A" color="#FACC15"];
+
+        b_upgrade [
+            label=<Upgrade detected?<BR/><FONT POINT-SIZE="7" COLOR="#888888">"upgrade" / "refresh" / "migrate"<BR/>or legacy provenance</FONT>>
+            shape=diamond
+            fillcolor="#2E2E1A"
+            color="#FACC15"
+            width=2.0
+            height=1.0
+        ];
+
+        b_upgrade_note [label="Upgrade specialization\n(version-aware migration)" fillcolor="#2E2E1A" color="#FACC15" style="filled,dashed"];
+        b6 [label="6. Check autonomy" fillcolor="#2E2E1A" color="#FACC15"];
+
+        b1 -> b_upgrade [color="#B8860B"];
+        b_upgrade -> b_upgrade_note [label="yes" color="#FACC15" fontcolor="#FACC15"];
+        b_upgrade -> b2 [label="no" color="#666666" fontcolor="#666666"];
+        b_upgrade_note -> b2 [color="#B8860B"];
+        b2 -> b3 -> b4 -> b5 -> b6 [color="#B8860B"];
+    }
+
+    // =====================================================================
+    // PATH C: REBUILD FROM REFERENCE (BLUE)
+    // =====================================================================
+    subgraph cluster_path_c {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#60A5FA"><B>Path C: Rebuild from Reference</B></FONT></TD></TR>
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="9" COLOR="#666666">reference-oriented interview</FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#0D0D1A";
+        color="#2D2D5A";
+        penwidth=1.5;
+        fontname="Helvetica Neue";
+
+        c1 [label="1. Identify reference artifact\n(path, repo URL, or file)" fillcolor="#1A1A2E" color="#60A5FA"];
+        c2 [label="2. Analyze reference\n→ delegate to bundle-auditor" fillcolor="#1A1A2E" color="#60A5FA" style="filled,dashed"];
+        c3 [label="3. What to keep,\nrestructure, add?" fillcolor="#1A1A2E" color="#60A5FA"];
+
+        c_experience_lens [
+            label=<Experience-oriented<BR/>redirect from D3?>
+            shape=diamond
+            fillcolor="#1A1A2E"
+            color="#C084FC"
+            width=2.0
+            height=1.0
+        ];
+
+        c3a [label="Focus on experience:\npersona, identity,\ninstruction shaping" fillcolor="#1A1A2E" color="#C084FC" style="filled,dashed"];
+        c4 [label="4. What tier for\nthe new bundle?" fillcolor="#1A1A2E" color="#60A5FA"];
+        c5 [label="5. Check autonomy" fillcolor="#1A1A2E" color="#60A5FA"];
+
+        c1 -> c2 -> c3 -> c_experience_lens [color="#1565C0"];
+        c_experience_lens -> c3a [label="yes (from D3)" color="#C084FC" fontcolor="#C084FC"];
+        c_experience_lens -> c4 [label="no" color="#666666" fontcolor="#666666"];
+        c3a -> c4 [color="#1565C0"];
+        c4 -> c5 [color="#1565C0"];
+    }
+
+    // =====================================================================
+    // PATH D: DESIGN MY EXPERIENCE (PURPLE)
+    // =====================================================================
+    subgraph cluster_path_d {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#C084FC"><B>Path D: Design My Experience</B></FONT></TD></TR>
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="9" COLOR="#666666">experience-oriented interview — NEW</FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#14091A";
+        color="#5A2D7A";
+        penwidth=2.0;
+        fontname="Helvetica Neue";
+
+        // ─── D SUB-FORK ────────────────────────────────────────
+        d_fork [
+            label=<How do you want<BR/>to start?>
+            shape=diamond
+            fillcolor="#1E1230"
+            color="#C084FC"
+            penwidth=2.0
+            width=2.2
+            height=1.2
+        ];
+
+        d_disambig [
+            label=<
+                <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3">
+                    <TR><TD><FONT COLOR="#C084FC"><B>⚠ AMBIGUOUS — ASK EXPLICITLY</B></FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#CCCCCC">"Do you want to:</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#D8B4FE"> (a) customize foundation — keep its rich</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#D8B4FE">     defaults and change what matters,</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#E9D5FF"> (b) start clean — pick only the</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#E9D5FF">     modules you need, or</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#60A5FA"> (c) use an existing bundle as</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="9" COLOR="#60A5FA">     your starting point?"</FONT></TD></TR>
+                </TABLE>
+            >
+            shape=box
+            style="filled,rounded"
+            fillcolor="#2A1A2E"
+            color="#C084FC"
+            penwidth=1.5
+        ];
+
+        d_fork -> d_disambig [
+            label="signals unclear"
+            style=dashed
+            color="#C084FC"
+            fontcolor="#C084FC"
+        ];
+        d_disambig -> d_fork [
+            label="user clarifies"
+            style=dashed
+            color="#888888"
+        ];
+
+        // ─── D3: REDIRECT ──────────────────────────────────────
+        d3_redirect [
+            label="D3: Adapt existing experience\n→ REDIRECT to Path C\nwith experience lens"
+            shape=box
+            style="filled,rounded"
+            fillcolor="#1A1A2E"
+            color="#60A5FA"
+            fontcolor="#60A5FA"
+        ];
+
+        d_fork -> d3_redirect [
+            label=<D3: "adapt an<BR/>existing bundle">
+            color="#60A5FA"
+            fontcolor="#60A5FA"
+        ];
+
+        // ─── D1: FOUNDATION + CUSTOMIZE ────────────────────────
+        subgraph cluster_d1 {
+            label=<
+                <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                    <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="12" COLOR="#D8B4FE"><B>D1: Foundation + Customize</B></FONT></TD></TR>
+                    <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="8" COLOR="#555555">thin bundle ON foundation</FONT></TD></TR>
+                </TABLE>
+            >;
+            style="filled,rounded";
+            fillcolor="#180E25";
+            color="#6B21A8";
+            penwidth=1.0;
+
+            d1_1 [label="1. Who are you?\nRole, workflow, team" fillcolor="#221638" color="#D8B4FE"];
+            d1_2 [label="2. What provider(s)?\nGHCP / Anthropic / OpenAI /\nOllama / multi-provider" fillcolor="#221638" color="#D8B4FE"];
+            d1_3 [label="3. What should this feel like?\nPersona, verbosity,\nproactiveness" fillcolor="#221638" color="#D8B4FE"];
+            d1_4 [label=<4. Foundation behaviors:<BR/>KEEP vs DROP?<BR/><FONT POINT-SIZE="7" COLOR="#888888">streaming-ui · status-context · redaction<BR/>todo-reminder · agents · sessions · logging …</FONT>> fillcolor="#221638" color="#D8B4FE"];
+            d1_5 [label="5. Additional capabilities\nbeyond foundation?\nnew agents, tools, modes" fillcolor="#221638" color="#D8B4FE"];
+            d1_6 [label="6. What's the identity?\nSystem instructions,\nagent name" fillcolor="#221638" color="#D8B4FE"];
+            d1_7 [label="7. Check autonomy" fillcolor="#221638" color="#D8B4FE"];
+
+            d1_1 -> d1_2 -> d1_3 -> d1_4 -> d1_5 -> d1_6 -> d1_7 [color="#7C3AED"];
+        }
+
+        // ─── D2: START FROM SCRATCH ────────────────────────────
+        subgraph cluster_d2 {
+            label=<
+                <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                    <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="12" COLOR="#E9D5FF"><B>D2: Start from Scratch</B></FONT></TD></TR>
+                    <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="8" COLOR="#555555">standalone bundle, cherry-pick modules</FONT></TD></TR>
+                </TABLE>
+            >;
+            style="filled,rounded";
+            fillcolor="#180E25";
+            color="#6B21A8";
+            penwidth=1.0;
+
+            d2_1 [label="1. Who are you?\nRole, workflow, team" fillcolor="#221638" color="#E9D5FF"];
+            d2_2 [label="2. What provider(s)?\nGHCP / Anthropic / OpenAI /\nOllama / multi-provider" fillcolor="#221638" color="#E9D5FF"];
+            d2_3 [label="3. What should this feel like?\nPersona, verbosity,\nproactiveness" fillcolor="#221638" color="#E9D5FF"];
+            d2_4 [label=<4. Orchestrator choice?<BR/><FONT POINT-SIZE="7" COLOR="#888888">loop-basic · loop-streaming · loop-events<BR/>(explain tradeoffs)</FONT>> fillcolor="#221638" color="#E9D5FF"];
+            d2_5 [label=<5. Context manager?<BR/><FONT POINT-SIZE="7" COLOR="#888888">context-simple · context-persistent</FONT>> fillcolor="#221638" color="#E9D5FF"];
+            d2_6 [label=<6. Cherry-pick tools<BR/><FONT POINT-SIZE="7" COLOR="#888888">filesystem · bash · web · search<BR/>delegate · todo · skills · MCP</FONT>> fillcolor="#221638" color="#E9D5FF"];
+            d2_7 [label=<7. Cherry-pick hooks<BR/><FONT POINT-SIZE="7" COLOR="#888888">streaming-ui · status-context · redaction<BR/>logging · approval</FONT>> fillcolor="#221638" color="#E9D5FF"];
+            d2_8 [label="8. Need agents?\nFrom ecosystem +\nany custom?" fillcolor="#221638" color="#E9D5FF"];
+            d2_9 [label="9. What's the identity?\nSystem instructions" fillcolor="#221638" color="#E9D5FF"];
+            d2_10 [label="10. Check autonomy" fillcolor="#221638" color="#E9D5FF"];
+
+            d2_1 -> d2_2 -> d2_3 -> d2_4 -> d2_5 -> d2_6 -> d2_7 -> d2_8 -> d2_9 -> d2_10 [color="#7C3AED"];
+        }
+
+        // ─── D FORK EDGES ──────────────────────────────────────
+        d_fork -> d1_1 [
+            label=<D1: "foundation<BR/>+ my preferences">
+            color="#D8B4FE"
+            fontcolor="#D8B4FE"
+            lhead=cluster_d1
+        ];
+
+        d_fork -> d2_1 [
+            label=<D2: "start<BR/>from scratch">
+            color="#E9D5FF"
+            fontcolor="#E9D5FF"
+            lhead=cluster_d2
+        ];
+    }
+
+    // =====================================================================
+    // SHARED HANDOFF (GREY)
+    // =====================================================================
+    subgraph cluster_handoff {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="2">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="14" COLOR="#9CA3AF"><B>Shared Handoff</B></FONT></TD></TR>
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="9" COLOR="#555555">all paths converge</FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#131318";
+        color="#4B5563";
+        penwidth=1.5;
+        fontname="Helvetica Neue";
+
+        handoff_compile [
+            label=<
+                <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3">
+                    <TR><TD><FONT COLOR="#9CA3AF"><B>Compile Handoff Payload</B></FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="8" COLOR="#666666">path_decision · target · tier</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="8" COLOR="#666666">summary_of_requirements</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="8" COLOR="#666666">known_constraints · open_questions</FONT></TD></TR>
+                    <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="8" COLOR="#666666">autonomy_requested · trigger_reason</FONT></TD></TR>
+                </TABLE>
+            >
+            shape=box
+            fillcolor="#1C1C24"
+            color="#6B7280"
+        ];
+
+        handoff_gate [
+            label=<autonomy_requested<BR/>AND open_questions<BR/>is empty?>
+            shape=diamond
+            fillcolor="#1C1C24"
+            color="#9CA3AF"
+            width=2.2
+            height=1.2
+        ];
+
+        handoff_blockers [
+            label="STAY in explore\nResolve open blockers\nbefore proceeding"
+            shape=box
+            style="filled,rounded"
+            fillcolor="#2A1A1A"
+            color="#FF375F"
+            fontcolor="#FF375F"
+        ];
+
+        handoff_autonomous [
+            label="Launch autonomous recipe\nbundle-autonomous-\npost-explore.yaml"
+            shape=box
+            style="filled,rounded"
+            fillcolor="#1C1C24"
+            color="#4ADE80"
+            fontcolor="#4ADE80"
+        ];
+
+        handoff_manual [
+            label="Transition to\n/bundle-spec"
+            shape=box
+            style="filled,rounded"
+            fillcolor="#1C1C24"
+            color="#60A5FA"
+            fontcolor="#60A5FA"
+        ];
+
+        handoff_compile -> handoff_gate [color="#6B7280"];
+        handoff_gate -> handoff_autonomous [
+            label="autonomy: yes\nblockers: none"
+            color="#4ADE80"
+            fontcolor="#4ADE80"
+        ];
+        handoff_gate -> handoff_manual [
+            label="autonomy: no"
+            color="#60A5FA"
+            fontcolor="#60A5FA"
+        ];
+        handoff_gate -> handoff_blockers [
+            label="autonomy: yes\nBUT blockers remain"
+            color="#FF375F"
+            fontcolor="#FF375F"
+        ];
+        handoff_blockers -> handoff_compile [
+            label="blockers resolved"
+            style=dashed
+            color="#888888"
+        ];
+    }
+
+    // =====================================================================
+    // PIPELINE CONTINUATION
+    // =====================================================================
+    pipeline [
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="3">
+                <TR><TD><FONT POINT-SIZE="12" COLOR="white"><B>Pipeline Continuation</B></FONT></TD></TR>
+                <TR><TD><FONT POINT-SIZE="9" COLOR="#555555">/bundle-spec → /bundle-plan → /bundle-execute → /bundle-verify → /bundle-finish</FONT></TD></TR>
+            </TABLE>
+        >
+        shape=box
+        style="filled,rounded"
+        fillcolor="#1A1D27"
+        color="#FF375F"
+        penwidth=2.0
+    ];
+
+    handoff_autonomous -> pipeline [color="#4ADE80" penwidth=1.5];
+    handoff_manual -> pipeline [color="#60A5FA" penwidth=1.5];
+
+    // =====================================================================
+    // MAIN FORK → PATH ENTRY EDGES
+    // =====================================================================
+
+    // Signals annotation nodes (invisible connectors with labels)
+    fork_main -> a1 [
+        label=<"build a tool" · "create a behavior"<BR/>"I need a capability">
+        color="#4ADE80"
+        fontcolor="#4ADE80"
+        penwidth=1.8
+        lhead=cluster_path_a
+    ];
+
+    fork_main -> b1 [
+        label=<"look at this bundle" ·<BR/>"review my bundle" ·<BR/>provides path/URL>
+        color="#FACC15"
+        fontcolor="#FACC15"
+        penwidth=1.8
+        lhead=cluster_path_b
+    ];
+
+    fork_main -> c1 [
+        label=<"rebuild this" ·<BR/>"start over with" ·<BR/>"use X as reference">
+        color="#60A5FA"
+        fontcolor="#60A5FA"
+        penwidth=1.8
+        lhead=cluster_path_c
+    ];
+
+    fork_main -> d_fork [
+        label=<"customize my amplifier" ·<BR/>"replace foundation" ·<BR/>"my own setup" · "I use GHCP">
+        color="#C084FC"
+        fontcolor="#C084FC"
+        penwidth=1.8
+        lhead=cluster_path_d
+    ];
+
+    // =====================================================================
+    // PATH EXITS → HANDOFF
+    // =====================================================================
+    a8 -> handoff_compile [
+        label="HANDOFF"
+        color="#4ADE80"
+        fontcolor="#4ADE80"
+        penwidth=1.5
+        ltail=cluster_path_a
+    ];
+
+    b6 -> handoff_compile [
+        label="HANDOFF"
+        color="#FACC15"
+        fontcolor="#FACC15"
+        penwidth=1.5
+        ltail=cluster_path_b
+    ];
+
+    c5 -> handoff_compile [
+        label="HANDOFF"
+        color="#60A5FA"
+        fontcolor="#60A5FA"
+        penwidth=1.5
+        ltail=cluster_path_c
+    ];
+
+    d1_7 -> handoff_compile [
+        label="HANDOFF"
+        color="#D8B4FE"
+        fontcolor="#D8B4FE"
+        penwidth=1.5
+    ];
+
+    d2_10 -> handoff_compile [
+        label="HANDOFF"
+        color="#E9D5FF"
+        fontcolor="#E9D5FF"
+        penwidth=1.5
+    ];
+
+    // D3 redirect → Path C entry
+    d3_redirect -> c1 [
+        label=<redirect with<BR/>experience lens<BR/><FONT POINT-SIZE="7">tier = bundle | app_bundle</FONT>>
+        color="#C084FC"
+        fontcolor="#C084FC"
+        style=dashed
+        penwidth=1.5
+        lhead=cluster_path_c
+    ];
+
+    // =====================================================================
+    // LEGEND
+    // =====================================================================
+    subgraph cluster_legend {
+        label=<
+            <TABLE BORDER="0" CELLSPACING="0" CELLPADDING="1">
+                <TR><TD><FONT FACE="Helvetica Neue" POINT-SIZE="11" COLOR="#666666"><B>Legend</B></FONT></TD></TR>
+            </TABLE>
+        >;
+        style="filled,rounded";
+        fillcolor="#0F1117";
+        color="#333333";
+        penwidth=1.0;
+        fontname="Helvetica Neue";
+
+        legend_content [
+            label=<
+                <TABLE BORDER="0" CELLSPACING="4" CELLPADDING="4">
+                    <TR>
+                        <TD BGCOLOR="#1A2E1A" BORDER="1" COLOR="#4ADE80"><FONT POINT-SIZE="9" COLOR="#4ADE80"> ■ Path A </FONT></TD>
+                        <TD><FONT POINT-SIZE="8" COLOR="#888888">Create New (capability)</FONT></TD>
+                        <TD BGCOLOR="#2E2E1A" BORDER="1" COLOR="#FACC15"><FONT POINT-SIZE="9" COLOR="#FACC15"> ■ Path B </FONT></TD>
+                        <TD><FONT POINT-SIZE="8" COLOR="#888888">Improve Existing (audit)</FONT></TD>
+                    </TR>
+                    <TR>
+                        <TD BGCOLOR="#1A1A2E" BORDER="1" COLOR="#60A5FA"><FONT POINT-SIZE="9" COLOR="#60A5FA"> ■ Path C </FONT></TD>
+                        <TD><FONT POINT-SIZE="8" COLOR="#888888">Rebuild from Reference</FONT></TD>
+                        <TD BGCOLOR="#221638" BORDER="1" COLOR="#C084FC"><FONT POINT-SIZE="9" COLOR="#C084FC"> ■ Path D </FONT></TD>
+                        <TD><FONT POINT-SIZE="8" COLOR="#888888">Design My Experience</FONT></TD>
+                    </TR>
+                    <TR>
+                        <TD COLSPAN="2"><FONT POINT-SIZE="8" COLOR="#888888">◇ Diamond = decision fork</FONT></TD>
+                        <TD COLSPAN="2"><FONT POINT-SIZE="8" COLOR="#FF375F">⚠ = explicit disambiguation question</FONT></TD>
+                    </TR>
+                    <TR>
+                        <TD COLSPAN="2"><FONT POINT-SIZE="8" COLOR="#888888">⬚ Box = interview step</FONT></TD>
+                        <TD COLSPAN="2"><FONT POINT-SIZE="8" COLOR="#888888">( ) Rounded = handoff/transition</FONT></TD>
+                    </TR>
+                    <TR>
+                        <TD COLSPAN="4"><FONT POINT-SIZE="8" COLOR="#888888">- - - Dashed border = delegated to another agent</FONT></TD>
+                    </TR>
+                </TABLE>
+            >
+            shape=none
+        ];
+    }
+}
