@@ -310,7 +310,7 @@ def test_litmus_test_has_compose_mechanism_deny():
     if not LITMUS_TEST_FILE.exists():
         pytest.skip("litmus-test.md does not exist yet")
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
-    assert "deny" in content, (
+    assert re.search(r"\bdeny\b", content), (
         "litmus-test.md must contain the 'deny' Compose mechanism. "
         "This mechanism blocks tool calls or provider requests via hook results."
     )
@@ -478,7 +478,7 @@ def test_kernel_contracts_has_hookresult_deny():
     if not KERNEL_CONTRACTS_FILE.exists():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
-    assert "deny" in content, (
+    assert re.search(r"\bdeny\b", content), (
         "kernel-contracts.md must document the 'deny' HookResult type. "
         "This is one of 4 HookResult types that hooks can return."
     )
