@@ -23,7 +23,7 @@ tags: ["bundle", "autonomous", "post-explore", "continuation", "no-gates"]
 
 context:
   # ── Explore handoff payload ──────────────────────────────────────────────
-  path_decision: ""           # "create_new" | "improve_existing" | "rebuild_from_reference"
+  path_decision: ""           # "create_new" | "improve_existing" | "rebuild_from_reference" | "design_my_experience"
   target: ""                  # Bundle name (create) or path/URL (improve/rebuild)
   tier: ""                    # "behavior" | "bundle" | "application_bundle"
   summary_of_requirements: "" # What was learned in bundle-explore

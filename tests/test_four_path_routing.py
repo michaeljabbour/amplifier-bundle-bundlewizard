@@ -138,3 +138,16 @@ def test_recipe_has_experience_design_context_fields():
         "Expected 'experience_lens' context field in "
         "recipes/bundle-autonomous-post-explore.yaml"
     )
+
+
+def test_recipe_path_decision_comment_includes_design_my_experience():
+    """path_decision comment must enumerate all four valid values including design_my_experience.
+
+    Guards against stale comments when new paths are added — the comment is the
+    developer-visible schema contract for what values the field accepts.
+    """
+    recipe = (RECIPES_DIR / "bundle-autonomous-post-explore.yaml").read_text()
+    assert '"design_my_experience"' in recipe, (
+        "Expected '\"design_my_experience\"' in the path_decision comment in "
+        "recipes/bundle-autonomous-post-explore.yaml — comment must enumerate all four paths"
+    )
