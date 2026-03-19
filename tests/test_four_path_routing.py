@@ -13,6 +13,8 @@ All tests in this file are RED (failing) until implementation is complete.
 import re
 from pathlib import Path
 
+import pytest  # noqa: F401
+
 
 # Repo root — tests/ is a direct child of the repo root
 REPO_ROOT = Path(__file__).parent.parent
