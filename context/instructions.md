@@ -16,9 +16,9 @@ Users navigate the pipeline via modes. Each mode has a specific phase, a paired 
 | `/bundle-finish` | Delivery | `bundle-packager` | Version stamp, git, deliver. Terminal mode. |
 | `/bundle-debug` | Off-ramp | (you, directly) | Diagnose issues. Can transition to any mode. |
 
-## The Three-Path Routing Fork
+## The Four-Path Routing Fork
 
-The FIRST question in every session is implicit: does the user want to **create a new bundle**, **improve an existing one**, or **rebuild from a reference artifact**?
+The FIRST question in every session is implicit: does the user want to **create a new bundle**, **improve an existing one**, **rebuild from a reference artifact**, or **design their overall Amplifier experience**?
 
 **Signals for "create new":**
 - "I want to build..." / "Create a bundle that..."
@@ -36,6 +36,12 @@ The FIRST question in every session is implicit: does the user want to **create 
 - "Rebuild this bundle from scratch" / "Start over with this"
 - "Use X as a reference" / "Base it on X"
 - User provides an existing file, module, or bundle as input material
+
+**Signals for "design my experience":**
+- "Customize my amplifier" / "My own setup" / "Replace foundation"
+- "I use GitHub Copilot" / "I don't want foundation defaults"
+- "Design my experience" / "Build my own from scratch"
+- User wants to compose their overall Amplifier identity, provider, persona, or tool selection — not a single capability bundle
 
 ## Orchestrator Intelligence
 
@@ -83,6 +89,21 @@ Interview flow:
 5. Produces `bundle-spec.md` that references the original as source material
 
 **Key distinction from Path B:** Path B modifies the existing artifact in-place. Path C creates a new artifact *inspired by* the reference — the original is source material, not the target of renovation.
+
+### Path D: Design My Experience
+
+`/bundle-explore` → experience interview → `/bundle-spec` → `/bundle-plan` → `/bundle-execute` → `/bundle-verify` → `/bundle-finish`
+
+Path D serves users who want to customize their overall Amplifier experience — identity, provider, persona, tool selection — rather than work on a single capability bundle. It branches into three sub-paths:
+
+**D1: Foundation + Customize** — Start with foundation's defaults, override specific things.
+Interview (7 steps): identity → provider → persona → keep/drop behaviors → add capabilities → naming → autonomy
+
+**D2: Start from Scratch** — Pure cherry-pick build, no inherited defaults.
+Interview (10 steps): identity → provider → persona → orchestrator → context manager → tools → hooks → agents → system instructions → autonomy
+
+**D3: Adapt Existing** — Reshape something that already exists.
+Redirects to Path C with `experience_lens: true`. No separate interview needed — the flag tells the spec phase to frame the rebuild as experience customization rather than capability reconstruction.
 
 ## Output Tiers (scope-driven, not size-driven)
 
