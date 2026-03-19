@@ -300,7 +300,7 @@ def test_litmus_test_has_compose_mechanism_inject_context():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert "inject_context" in content, (
         "litmus-test.md must contain the 'inject_context' Compose mechanism. "
-        "This is one of 6 Compose mechanisms for modifying behavior without "
+        "This is the first of 6 Compose mechanisms for modifying behavior without "
         "writing a custom orchestrator."
     )
 
@@ -312,7 +312,8 @@ def test_litmus_test_has_compose_mechanism_deny():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert re.search(r"\bdeny\b", content), (
         "litmus-test.md must contain the 'deny' Compose mechanism. "
-        "This mechanism blocks tool calls or provider requests via hook results."
+        "This is the second of 6 Compose mechanisms — blocks tool calls or "
+        "provider requests via hook results."
     )
 
 
@@ -323,7 +324,8 @@ def test_litmus_test_has_compose_mechanism_ask_user():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert "ask_user" in content, (
         "litmus-test.md must contain the 'ask_user' Compose mechanism. "
-        "This mechanism pauses execution to gather human input via hook results."
+        "This is the third of 6 Compose mechanisms — pauses execution to gather "
+        "human input via hook results."
     )
 
 
@@ -334,7 +336,8 @@ def test_litmus_test_has_compose_mechanism_tool_task():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert "tool-task" in content, (
         "litmus-test.md must contain the 'tool-task' Compose mechanism. "
-        "This mechanism uses tool-task to delegate work without a custom orchestrator."
+        "This is the fourth of 6 Compose mechanisms — delegates work via tool-task "
+        "without a custom orchestrator."
     )
 
 
@@ -345,7 +348,8 @@ def test_litmus_test_has_compose_mechanism_observation_hook():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert "observation hook" in content, (
         "litmus-test.md must contain the 'observation hook' Compose mechanism. "
-        "Observation hooks let you react to events without controlling the loop."
+        "This is the fifth of 6 Compose mechanisms — lets you react to events "
+        "without controlling the loop."
     )
 
 
@@ -356,8 +360,9 @@ def test_litmus_test_has_compose_mechanism_orchestrator_config():
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
     assert "orchestrator config" in content, (
         "litmus-test.md must contain the 'orchestrator config' Compose mechanism. "
-        "Configuring an existing orchestrator (e.g., changing loop limits) is "
-        "often sufficient without building a new one."
+        "This is the sixth of 6 Compose mechanisms — configuring an existing "
+        "orchestrator (e.g., changing loop limits) is often sufficient without "
+        "building a new one."
     )
 
 
@@ -407,7 +412,7 @@ def test_kernel_contracts_has_event_execution_start():
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "execution:start" in content, (
         "kernel-contracts.md must document the 'execution:start' kernel event. "
-        "This is one of 7 required kernel events that orchestrators may intercept."
+        "This is the first of 7 required kernel events that orchestrators may intercept."
     )
 
 
@@ -417,7 +422,8 @@ def test_kernel_contracts_has_event_execution_end():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "execution:end" in content, (
-        "kernel-contracts.md must document the 'execution:end' kernel event."
+        "kernel-contracts.md must document the 'execution:end' kernel event. "
+        "This is the second of 7 required kernel events."
     )
 
 
@@ -427,7 +433,8 @@ def test_kernel_contracts_has_event_provider_request():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "provider:request" in content, (
-        "kernel-contracts.md must document the 'provider:request' kernel event."
+        "kernel-contracts.md must document the 'provider:request' kernel event. "
+        "This is the third of 7 required kernel events."
     )
 
 
@@ -437,7 +444,8 @@ def test_kernel_contracts_has_event_provider_response():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "provider:response" in content, (
-        "kernel-contracts.md must document the 'provider:response' kernel event."
+        "kernel-contracts.md must document the 'provider:response' kernel event. "
+        "This is the fourth of 7 required kernel events."
     )
 
 
@@ -448,7 +456,8 @@ def test_kernel_contracts_has_event_tool_pre():
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "tool:pre" in content, (
         "kernel-contracts.md must document the 'tool:pre' kernel event. "
-        "This event fires before a tool is executed and supports deny/modify."
+        "This is the fifth of 7 required kernel events — fires before a tool "
+        "is executed and supports deny/modify."
     )
 
 
@@ -458,7 +467,8 @@ def test_kernel_contracts_has_event_tool_post():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "tool:post" in content, (
-        "kernel-contracts.md must document the 'tool:post' kernel event."
+        "kernel-contracts.md must document the 'tool:post' kernel event. "
+        "This is the sixth of 7 required kernel events."
     )
 
 
@@ -480,7 +490,7 @@ def test_kernel_contracts_has_hookresult_deny():
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert re.search(r"\bdeny\b", content), (
         "kernel-contracts.md must document the 'deny' HookResult type. "
-        "This is one of 4 HookResult types that hooks can return."
+        "This is the first of 4 HookResult types that hooks can return."
     )
 
 
@@ -491,7 +501,8 @@ def test_kernel_contracts_has_hookresult_modify():
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "modify" in content, (
         "kernel-contracts.md must document the 'modify' HookResult type. "
-        "This HookResult type allows changing the payload before it is processed."
+        "This is the second of 4 HookResult types — allows changing the payload "
+        "before it is processed."
     )
 
 
@@ -501,7 +512,8 @@ def test_kernel_contracts_has_hookresult_inject_context():
         pytest.skip("kernel-contracts.md does not exist yet")
     content = KERNEL_CONTRACTS_FILE.read_text(encoding="utf-8")
     assert "inject_context" in content, (
-        "kernel-contracts.md must document the 'inject_context' HookResult type."
+        "kernel-contracts.md must document the 'inject_context' HookResult type. "
+        "This is the third of 4 HookResult types."
     )
 
 
@@ -552,7 +564,7 @@ def test_catalog_has_existing_orchestrator_loop_basic():
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-basic" in content, (
         "catalog.md must reference the 'loop-basic' existing orchestrator. "
-        "This is one of 3 existing orchestrators that provide the canonical "
+        "This is the first of 3 existing orchestrators that provide the canonical "
         "starting point for new orchestrator designs."
     )
 
@@ -563,7 +575,8 @@ def test_catalog_has_existing_orchestrator_loop_streaming():
         pytest.skip("catalog.md does not exist yet")
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-streaming" in content, (
-        "catalog.md must reference the 'loop-streaming' existing orchestrator."
+        "catalog.md must reference the 'loop-streaming' existing orchestrator. "
+        "This is the second of 3 existing orchestrators."
     )
 
 
@@ -585,7 +598,7 @@ def test_catalog_has_pattern_loop_parallel():
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-parallel" in content, (
         "catalog.md must contain the 'loop-parallel' pattern library entry. "
-        "This is one of 5 reusable patterns that users can request by name."
+        "This is the first of 5 reusable patterns that users can request by name."
     )
 
 
@@ -595,7 +608,8 @@ def test_catalog_has_pattern_loop_multi_provider():
         pytest.skip("catalog.md does not exist yet")
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-multi-provider" in content, (
-        "catalog.md must contain the 'loop-multi-provider' pattern library entry."
+        "catalog.md must contain the 'loop-multi-provider' pattern library entry. "
+        "This is the second of 5 reusable patterns."
     )
 
 
@@ -605,7 +619,8 @@ def test_catalog_has_pattern_loop_phased():
         pytest.skip("catalog.md does not exist yet")
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-phased" in content, (
-        "catalog.md must contain the 'loop-phased' pattern library entry."
+        "catalog.md must contain the 'loop-phased' pattern library entry. "
+        "This is the third of 5 reusable patterns."
     )
 
 
@@ -615,7 +630,8 @@ def test_catalog_has_pattern_loop_convergence():
         pytest.skip("catalog.md does not exist yet")
     content = CATALOG_FILE.read_text(encoding="utf-8")
     assert "loop-convergence" in content, (
-        "catalog.md must contain the 'loop-convergence' pattern library entry."
+        "catalog.md must contain the 'loop-convergence' pattern library entry. "
+        "This is the fourth of 5 reusable patterns."
     )
 
 
