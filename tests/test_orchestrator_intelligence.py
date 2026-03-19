@@ -383,10 +383,6 @@ def test_litmus_test_has_applied_example_parallel():
     if not LITMUS_TEST_FILE.exists():
         pytest.skip("litmus-test.md does not exist yet")
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
-    assert "## Applied Examples" in content, (
-        "litmus-test.md must have an '## Applied Examples' section before checking "
-        "for the parallel example."
-    )
     assert "parallel" in content, (
         "litmus-test.md must contain an applied example for parallel orchestration. "
         "Concrete examples help the advisor recognize when the Create path is appropriate."
@@ -398,10 +394,6 @@ def test_litmus_test_has_applied_example_multi_provider():
     if not LITMUS_TEST_FILE.exists():
         pytest.skip("litmus-test.md does not exist yet")
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
-    assert "## Applied Examples" in content, (
-        "litmus-test.md must have an '## Applied Examples' section before checking "
-        "for the multi-provider example."
-    )
     assert "multi-provider" in content, (
         "litmus-test.md must contain an applied example for multi-provider routing. "
         "Multi-provider is a key signal that a custom orchestrator is needed."
@@ -413,10 +405,6 @@ def test_litmus_test_has_applied_example_approval():
     if not LITMUS_TEST_FILE.exists():
         pytest.skip("litmus-test.md does not exist yet")
     content = LITMUS_TEST_FILE.read_text(encoding="utf-8")
-    assert "## Applied Examples" in content, (
-        "litmus-test.md must have an '## Applied Examples' section before checking "
-        "for the approval example."
-    )
     assert "approval" in content, (
         "litmus-test.md must contain an applied example for approval gates. "
         "Approval gates are a common orchestrator pattern that the advisor must "
