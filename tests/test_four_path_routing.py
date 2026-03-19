@@ -13,8 +13,6 @@ All tests in this file are RED (failing) until implementation is complete.
 import re
 from pathlib import Path
 
-import pytest  # noqa: F401
-
 
 # Repo root — tests/ is a direct child of the repo root
 REPO_ROOT = Path(__file__).parent.parent
@@ -52,7 +50,10 @@ def test_instructions_has_path_d_signals():
 
 
 def test_instructions_has_path_d_interview_flow():
-    """instructions.md must document Path D and the Design My Experience interview flow."""
+    """instructions.md must document Path D and the Design My Experience interview flow.
+
+    Case-sensitive: these are section headings with specific capitalisation.
+    """
     instructions = (CONTEXT_DIR / "instructions.md").read_text()
     assert "Path D" in instructions, (
         "Expected 'Path D' routing description in context/instructions.md"
