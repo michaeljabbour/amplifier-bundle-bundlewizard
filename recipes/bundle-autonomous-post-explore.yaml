@@ -36,6 +36,8 @@ context:
   provenance_shape: ""       # "legacy_bundlewizard" | "generated_by_v1" | "none"
   source_schema_version: ""  # Schema version found in target (empty if none)
   target_schema_version: "1" # Current canonical schema version
+  experience_sub_path: ""    # "d1_foundation_customize" | "d2_start_from_scratch" | "d3_adapt_existing" (Path D only)
+  experience_lens: false     # True when D3 redirects to Path C — frames rebuild as experience customization
 
 stages:
   # ============================================================================
