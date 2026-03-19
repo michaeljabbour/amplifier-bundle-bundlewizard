@@ -175,13 +175,6 @@ def test_catalog_file_exists():
 # ---------------------------------------------------------------------------
 
 
-def test_behavior_yaml_exists():
-    """behaviors/bundlewizard.yaml must exist."""
-    assert BEHAVIOR_FILE.exists(), (
-        f"behaviors/bundlewizard.yaml does not exist at {BEHAVIOR_FILE}."
-    )
-
-
 def test_behavior_yaml_includes_orchestrator_advisor():
     """behaviors/bundlewizard.yaml agents.include must list the orchestrator-advisor."""
     if not BEHAVIOR_FILE.exists():
@@ -201,13 +194,6 @@ def test_behavior_yaml_includes_orchestrator_advisor():
 # ---------------------------------------------------------------------------
 # 4. Instructions reference orchestrator-advisor and Orchestrator Module tier
 # ---------------------------------------------------------------------------
-
-
-def test_instructions_file_exists():
-    """context/instructions.md must exist."""
-    assert INSTRUCTIONS_FILE.exists(), (
-        f"context/instructions.md does not exist at {INSTRUCTIONS_FILE}."
-    )
 
 
 def test_instructions_references_orchestrator_advisor():
