@@ -122,7 +122,7 @@ All orchestrator modules **must** use the `loop-` prefix. This is mandatory — 
 The entry point in `pyproject.toml` must match the display name exactly:
 
 ```toml
-[project.entry-points."amplifier.orchestrators"]
+[project.entry-points."amplifier.modules"]
 loop-parallel = "amplifier_module_loop_parallel:mount"
 ```
 
