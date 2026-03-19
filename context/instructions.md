@@ -92,7 +92,7 @@ Interview flow:
 
 ### Path D: Design My Experience
 
-`/bundle-explore` → experience interview → `/bundle-spec` → `/bundle-plan` → `/bundle-execute` → `/bundle-verify` → `/bundle-finish`
+`/bundle-explore` → experience interview *(D-specific phase)* → `/bundle-spec` → `/bundle-plan` → `/bundle-execute` → `/bundle-verify` → `/bundle-finish`
 
 Path D serves users who want to customize their overall Amplifier experience — identity, provider, persona, tool selection — rather than work on a single capability bundle. It branches into three sub-paths:
 
