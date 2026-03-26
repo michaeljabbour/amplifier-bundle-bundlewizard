@@ -167,9 +167,8 @@ async def handle_websocket(websocket: Any, session: Any) -> None:
             logger.info("Received approval_response: %s", msg)
 
         elif msg_type == MessageType.CANVAS_EDITS:
-            edits: str = str(msg.get("data", ""))
-            pending_canvas_edits = edits
-            logger.info("Stored pending canvas edits (%d chars).", len(edits))
+            pending_canvas_edits = msg.get("data", "")
+            logger.info("Stored pending canvas edits: %s", pending_canvas_edits)
 
         else:
             logger.warning("Unhandled message type '%s'; discarding.", msg.get("type"))
