@@ -93,3 +93,80 @@ def test_desktop_body_contains_visual_adapter_mention():
     body = _parse_body(_read_desktop())
     mention = "@bundlewizard:context/desktop-visual-adapter.md"
     assert mention in body, f"Body must contain '{mention}' but it was not found"
+
+
+# ---------------------------------------------------------------------------
+# Desktop visual adapter context tests
+# ---------------------------------------------------------------------------
+
+VISUAL_ADAPTER = REPO_ROOT / "context" / "desktop-visual-adapter.md"
+
+
+def _read_visual_adapter() -> str:
+    """Return the raw text of context/desktop-visual-adapter.md."""
+    assert VISUAL_ADAPTER.exists(), f"{VISUAL_ADAPTER} does not exist"
+    return VISUAL_ADAPTER.read_text(encoding="utf-8")
+
+
+def test_visual_adapter_file_exists():
+    """context/desktop-visual-adapter.md must exist."""
+    assert VISUAL_ADAPTER.exists(), "context/desktop-visual-adapter.md does not exist"
+
+
+def test_visual_adapter_contains_graph_fence_type():
+    """File must reference the bundlewizard-graph fenced code block type."""
+    content = _read_visual_adapter()
+    assert "bundlewizard-graph" in content, (
+        "desktop-visual-adapter.md must contain 'bundlewizard-graph'"
+    )
+
+
+def test_visual_adapter_mentions_all_node_types():
+    """File must mention all 8 node types."""
+    content = _read_visual_adapter()
+    node_types = [
+        "agent",
+        "tool",
+        "context",
+        "mode",
+        "recipe",
+        "state",
+        "behavior",
+        "bundle",
+    ]
+    for node_type in node_types:
+        assert node_type in content, (
+            f"desktop-visual-adapter.md must mention node type '{node_type}'"
+        )
+
+
+def test_visual_adapter_mentions_all_edge_types():
+    """File must mention all 10 edge types."""
+    content = _read_visual_adapter()
+    edge_types = [
+        "inheritance",
+        "spawn",
+        "toolRegistration",
+        "pipelineFlow",
+        "adversarial",
+        "loopBack",
+        "modeTransition",
+        "contextLoad",
+        "recipeNesting",
+        "stateReadWrite",
+    ]
+    for edge_type in edge_types:
+        assert edge_type in content, (
+            f"desktop-visual-adapter.md must mention edge type '{edge_type}'"
+        )
+
+
+def test_visual_adapter_contains_emission_sections():
+    """File must contain 'When to emit' and 'When NOT to emit' sections."""
+    content = _read_visual_adapter()
+    assert "When to emit" in content, (
+        "desktop-visual-adapter.md must contain a 'When to emit' section"
+    )
+    assert "When NOT to emit" in content, (
+        "desktop-visual-adapter.md must contain a 'When NOT to emit' section"
+    )
