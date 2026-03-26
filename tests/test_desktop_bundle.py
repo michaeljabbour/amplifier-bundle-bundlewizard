@@ -1,7 +1,7 @@
 """Desktop bundle variant structural contract tests.
 
 Verify:
-- bundles/desktop.yaml has the correct bundle metadata (name, version)
+- bundles/desktop.md has the correct bundle metadata (name, version)
 - includes list references the base bundlewizard bundle
 - Markdown body contains the expected @mention for the visual adapter context
 """
@@ -13,19 +13,19 @@ import yaml
 from conftest import REPO_ROOT
 
 BUNDLES_DIR = REPO_ROOT / "bundles"
-DESKTOP_YAML = BUNDLES_DIR / "desktop.yaml"
+DESKTOP_MD = BUNDLES_DIR / "desktop.md"
 
 
 def _read_desktop() -> str:
-    """Return the raw text of bundles/desktop.yaml."""
-    assert DESKTOP_YAML.exists(), f"{DESKTOP_YAML} does not exist"
-    return DESKTOP_YAML.read_text(encoding="utf-8")
+    """Return the raw text of bundles/desktop.md."""
+    assert DESKTOP_MD.exists(), f"{DESKTOP_MD} does not exist"
+    return DESKTOP_MD.read_text(encoding="utf-8")
 
 
 def _parse_frontmatter(text: str) -> dict:
     """Extract and parse the YAML frontmatter block from the file."""
     match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
-    assert match, "bundles/desktop.yaml has no YAML frontmatter delimited by ---"
+    assert match, "bundles/desktop.md has no YAML frontmatter delimited by ---"
     return yaml.safe_load(match.group(1))
 
 
@@ -33,7 +33,7 @@ def _parse_body(text: str) -> str:
     """Return everything after the closing --- frontmatter delimiter."""
     # Strip the frontmatter block and return the remainder
     match = re.match(r"^---\s*\n.*?\n---\s*\n?(.*)", text, re.DOTALL)
-    assert match, "bundles/desktop.yaml has no body after frontmatter"
+    assert match, "bundles/desktop.md has no body after frontmatter"
     return match.group(1)
 
 
@@ -237,7 +237,12 @@ def test_visual_adapter_has_story_generation_section():
 def test_visual_adapter_story_generation_mentions_agents():
     """Story Generation section must mention key story agents."""
     content = _read_visual_adapter()
-    for agent in ["storyteller", "story-researcher", "content-strategist", "technical-writer"]:
+    for agent in [
+        "storyteller",
+        "story-researcher",
+        "content-strategist",
+        "technical-writer",
+    ]:
         assert agent in content, (
             f"desktop-visual-adapter.md must mention story agent '{agent}'"
         )
