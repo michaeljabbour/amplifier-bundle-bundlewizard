@@ -10,8 +10,11 @@ from __future__ import annotations
 import json
 import logging
 import re
+import uuid
 from enum import Enum, auto
 from typing import Any
+
+from .session_store import save_session
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +102,9 @@ async def _execute_prompt(
     session: Any,
     text: str,
     chat_log: list[dict[str, str]],
+    *,
+    web_session_id: str | None = None,
+    latest_graph_state: list[dict[str, Any] | None] | None = None,
 ) -> None:
     """Execute *text* against *session* and forward results over *websocket*.
 
@@ -106,6 +112,8 @@ async def _execute_prompt(
     * Graph blocks are extracted and forwarded as ``graph_state`` messages.
     * The cleaned response text is forwarded as a ``response`` message.
     * Only the cleaned text is persisted in *chat_log*.
+    * When *web_session_id* is provided the session (including the latest graph
+      state accumulated across turns) is persisted to disk via ``save_session``.
     """
     response = await session.execute(text)
 
@@ -113,6 +121,22 @@ async def _execute_prompt(
     content: str = response if isinstance(response, str) else response.content
 
     graph_json, clean_text = extract_graph_block(content)
+
+    # Accumulate the most-recent graph state across turns so that turns without
+    # a graph block still carry forward the last known graph when saving.
+    if graph_json is not None and latest_graph_state is not None:
+        latest_graph_state[0] = graph_json
+
+    # Persist clean text and (if available) the latest graph state to disk.
+    chat_log.append({"role": "assistant", "content": clean_text})
+    if web_session_id is not None:
+        save_session(
+            web_session_id,
+            chat_log,
+            graph_state=latest_graph_state[0]
+            if latest_graph_state is not None
+            else None,
+        )
 
     # Send the clean (graph-stripped) assistant text to the client.
     await websocket.send(json.dumps({"type": "response", "data": clean_text}))
@@ -128,9 +152,6 @@ async def _execute_prompt(
         )
         await websocket.send(json.dumps({"type": "graph_state", "data": graph_json}))
 
-    # Persist the clean text (not the raw AI output) in the conversation log.
-    chat_log.append({"role": "assistant", "content": clean_text})
-
 
 async def handle_websocket(websocket: Any, session: Any) -> None:
     """Handle an active WebSocket connection for the lifetime of the session.
@@ -145,6 +166,8 @@ async def handle_websocket(websocket: Any, session: Any) -> None:
     * All other types are logged and discarded.
     """
     chat_log: list[dict[str, str]] = []
+    latest_graph_state: list[dict[str, Any] | None] = [None]
+    web_session_id = str(uuid.uuid4())
     pending_canvas_edits: str | None = None
 
     async for raw in websocket:
@@ -161,7 +184,14 @@ async def handle_websocket(websocket: Any, session: Any) -> None:
             if pending_canvas_edits is not None:
                 text = f"{text}\n\n[CANVAS EDITS: {pending_canvas_edits}]"
                 pending_canvas_edits = None
-            await _execute_prompt(websocket, session, text, chat_log)
+            await _execute_prompt(
+                websocket,
+                session,
+                text,
+                chat_log,
+                web_session_id=web_session_id,
+                latest_graph_state=latest_graph_state,
+            )
 
         elif msg_type == MessageType.APPROVAL_RESPONSE:
             logger.info("Received approval_response: %s", msg)
