@@ -170,3 +170,40 @@ def test_visual_adapter_contains_emission_sections():
     assert "When NOT to emit" in content, (
         "desktop-visual-adapter.md must contain a 'When NOT to emit' section"
     )
+
+
+def test_visual_adapter_progressive_emission_strategy():
+    """File must describe progressive/skeleton emission from the first response."""
+    content = _read_visual_adapter()
+    # At least one of these terms must appear, confirming the progressive strategy
+    has_skeleton = "skeleton" in content.lower()
+    has_scaffolding = "scaffolding" in content.lower()
+    has_first_response = "first response" in content.lower()
+    assert has_skeleton or has_scaffolding or has_first_response, (
+        "desktop-visual-adapter.md must mention 'skeleton', 'scaffolding', or "
+        "'first response' to confirm progressive emission strategy"
+    )
+
+
+def test_visual_adapter_contains_example_json_block():
+    """File must contain a concrete example JSON emission with expected keys."""
+    content = _read_visual_adapter()
+    # The example must be a bundlewizard-graph JSON block with key structural elements
+    assert '"bundle-root"' in content, (
+        "desktop-visual-adapter.md must contain an example JSON block with a 'bundle-root' node"
+    )
+    assert '"explore-phase"' in content, (
+        "desktop-visual-adapter.md must contain an example JSON block with an 'explore-phase' node"
+    )
+    assert '"tentative"' in content, (
+        "desktop-visual-adapter.md must contain 'tentative' markers in the example JSON"
+    )
+
+
+def test_visual_adapter_phase_guidance():
+    """File must contain per-phase emission guidance."""
+    content = _read_visual_adapter()
+    for phase in ["Explore", "Spec", "Plan", "Execute"]:
+        assert phase in content, (
+            f"desktop-visual-adapter.md must contain phase guidance for '{phase}'"
+        )

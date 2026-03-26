@@ -4,7 +4,7 @@ You are running inside a desktop/web app with a **visual canvas**. Users see a s
 
 ## Structured Emission Protocol
 
-After every response that modifies the bundle design, emit a **full-state** `bundlewizard-graph` JSON block in a fenced code block:
+Emit a **full-state** `bundlewizard-graph` JSON block in a fenced code block:
 
 ````
 ```bundlewizard-graph
@@ -57,34 +57,71 @@ Every emission describes the **complete current model** — not a diff. The `met
 }
 ```
 
-**Node types:** `agent`, `tool`, `context`, `mode`, `recipe`, `state`, `behavior`, `bundle` — use the type that best describes each component.
+**Node types:** `agent`, `tool`, `context`, `mode`, `recipe`, `state`, `behavior`, `bundle`.
 
-**Edge types:**
-- `inheritance` — bundle extends another bundle
-- `spawn` — agent delegates to a sub-agent
-- `toolRegistration` — agent has access to a tool
-- `pipelineFlow` — sequential data/control flow
-- `adversarial` — adversarial review or challenge relationship
-- `loopBack` — feedback loop or retry cycle
-- `modeTransition` — switching between modes
-- `contextLoad` — context file loaded by a component
-- `recipeNesting` — recipe step invokes another recipe
-- `stateReadWrite` — component reads or writes shared state
+**Edge types:** `inheritance` (extends), `spawn` (delegates), `toolRegistration` (has tool), `pipelineFlow` (sequential flow), `adversarial` (review/challenge), `loopBack` (retry cycle), `modeTransition` (mode switch), `contextLoad` (loads context), `recipeNesting` (invokes recipe), `stateReadWrite` (shared state).
 
-## When to emit
+## Progressive Emission Strategy
 
-Emit a `bundlewizard-graph` block after:
-- Defining or refining the bundle name/description
-- Adding, removing, or modifying agents, tools, modes, recipes, behaviors, or context files
-- Advancing the workflow phase
-- Producing a concrete file artifact
+**Emit a skeleton graph from the very first response.** The canvas is the main selling point — a blank canvas feels broken. Even a tentative skeleton with placeholder nodes gives users immediate visual feedback and shows the architecture taking shape.
 
-## When NOT to emit
+The graph grows progressively: start rough, refine as you learn more.
 
-Do **not** emit a `bundlewizard-graph` block for:
-- Pure conversation turns (questions, clarifications with no design changes)
+### Phase-by-Phase Guidance
+
+- **Explore phase:** Emit after every response where you learn something about the bundle's architecture. The graph starts as a skeleton and fills in. Use `"tentative"` in subtitles or yellow properties for unconfirmed nodes. Even rough structure is better than a blank canvas.
+- **Spec phase:** Emit as the spec solidifies — agents get specific names, roles, context dependencies. Tentative markers get replaced with confirmed details.
+- **Plan phase:** Emit to show task breakdown and implementation order.
+- **Execute phase:** Emit as files are generated, showing the bundle structure being built.
+- **Verify/Finish:** Final emission reflects the complete bundle.
+
+### When to emit
+
+Emit a `bundlewizard-graph` block:
+- **On the first response** — always emit a skeleton showing the bundle concept
+- When you learn something new that shapes the architecture (user reveals entry points, tech choices, design patterns)
+- When acknowledging what you learned, even if also asking the next question
+- When advancing the workflow phase
+- When producing a concrete file artifact
+
+### When NOT to emit
+
+Do **not** emit when:
+- The response is purely a follow-up question where you learned **zero** new information
 - Status updates with no state change
 - Error messages
+
+### First Response Skeleton Example
+
+On the very first response, emit a scaffolding graph like this:
+
+```bundlewizard-graph
+{
+  "version": "1",
+  "meta": {
+    "bundleName": "cicd-wizard",
+    "bundleVersion": "0.1.0",
+    "phase": "explore",
+    "changes": ["Initial bundle concept — tentative structure from first interview question"]
+  },
+  "clusters": [
+    {"id": "bundle-entry", "label": "Bundle Entry", "parent": null, "icon": null},
+    {"id": "pipeline", "label": "Pipeline Phases (tentative)", "parent": null, "icon": null}
+  ],
+  "nodes": [
+    {"id": "bundle-root", "type": "bundle", "cluster": "bundle-entry", "title": "cicd-wizard", "subtitle": "Bundle · v0.1.0", "properties": [{"label": "CI/CD pipeline design & generation", "color": "default"}], "tooltip": "Root bundle entry point"},
+    {"id": "explore-phase", "type": "mode", "cluster": "pipeline", "title": "Explore", "subtitle": "Mode · interview", "properties": [{"label": "Active", "color": "green"}], "tooltip": "Interview & discovery phase"},
+    {"id": "design-phase", "type": "mode", "cluster": "pipeline", "title": "Design", "subtitle": "Mode · tentative", "properties": [{"label": "Pending", "color": "yellow"}], "tooltip": "Architecture spec phase"},
+    {"id": "execute-phase", "type": "mode", "cluster": "pipeline", "title": "Execute", "subtitle": "Mode · tentative", "properties": [{"label": "Pending", "color": "yellow"}], "tooltip": "Convergence loop phase"}
+  ],
+  "edges": [
+    {"from": "explore-phase", "to": "design-phase", "edgeType": "modeTransition", "label": "reqs"},
+    {"from": "design-phase", "to": "execute-phase", "edgeType": "modeTransition", "label": "spec ✓"}
+  ]
+}
+```
+
+Then progressively enrich this graph as the interview reveals more: new agents, tools, modes, context files, and relationships.
 
 ## Chat UX Constraints
 
