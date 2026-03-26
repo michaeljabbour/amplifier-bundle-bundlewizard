@@ -9,9 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 
-# The integration is exposed via session_bridge, which imports _execute_prompt
-# from ws_handler — this is the actual bridge runtime path.
-from bundlewizard_bridge.session_bridge import execute_prompt
+from bundlewizard_bridge.ws_handler import _execute_prompt as execute_prompt
 
 
 class _MockWebSocket:

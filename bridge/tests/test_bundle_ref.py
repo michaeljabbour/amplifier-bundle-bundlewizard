@@ -12,3 +12,8 @@ def test_bundle_ref_points_to_desktop_variant():
 def test_bundle_ref_uses_subdirectory_fragment():
     """The bundle ref must use the #subdirectory= fragment to load the desktop bundle."""
     assert "#subdirectory=" in BUNDLEWIZARD_BUNDLE_REF
+
+
+def test_bundle_ref_uses_main_branch_by_default():
+    """BUNDLEWIZARD_BUNDLE_REF defaults to the main branch."""
+    assert "@main#subdirectory=" in BUNDLEWIZARD_BUNDLE_REF
