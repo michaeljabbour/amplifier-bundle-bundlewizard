@@ -51,10 +51,10 @@ def test_desktop_bundle_name():
 
 
 def test_desktop_bundle_version():
-    """bundle.version must be 0.4.0."""
+    """bundle.version must be 0.4.1."""
     data = _parse_frontmatter(_read_desktop())
-    assert data.get("bundle", {}).get("version") == "0.4.0", (
-        "bundle.version must be '0.4.0'"
+    assert data.get("bundle", {}).get("version") == "0.4.1", (
+        "bundle.version must be '0.4.1'"
     )
 
 
@@ -63,12 +63,24 @@ def test_desktop_bundle_version():
 # ---------------------------------------------------------------------------
 
 
-def test_desktop_includes_exactly_one_entry():
-    """includes list must have exactly one entry."""
+def test_desktop_includes_exactly_two_entries():
+    """includes list must have exactly two entries (bundlewizard + stories)."""
     data = _parse_frontmatter(_read_desktop())
     includes = data.get("includes", [])
-    assert len(includes) == 1, (
-        f"includes must have exactly one entry, got {len(includes)}"
+    assert len(includes) == 2, (
+        f"includes must have exactly two entries, got {len(includes)}"
+    )
+
+
+def test_desktop_includes_stories_bundle():
+    """The second includes entry must reference the amplifier-module-stories bundle."""
+    data = _parse_frontmatter(_read_desktop())
+    includes = data.get("includes", [])
+    assert len(includes) >= 2, "includes must have at least two entries"
+    entry = includes[1]
+    bundle_ref = entry.get("bundle", "")
+    assert "amplifier-module-stories" in bundle_ref, (
+        f"includes[1].bundle must reference 'amplifier-module-stories', got {bundle_ref!r}"
     )
 
 
