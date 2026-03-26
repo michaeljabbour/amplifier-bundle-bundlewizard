@@ -97,7 +97,10 @@ Delegate to `foundation:foundation-expert`:
 
 ### 5. Produce bundle-spec.md
 
-Write the spec document to the working directory:
+Write the spec document to the working directory. Ensure:
+- **Requirements** section has one R-ID per interview finding, with a testable Acceptance Criterion for each.
+- **Consumer Experience** section reflects the explorer's answers to the consumer question (target persona, first-run expectations, progressive disclosure path).
+- **Scope Exclusions** section lists deliberate omissions — anything explicitly out of scope and the rationale.
 
 ```markdown
 # Bundle Specification: [name]
@@ -109,6 +112,27 @@ Write the spec document to the working directory:
 
 ## File Structure
 [tree diagram of all files to create/modify]
+
+## Requirements
+
+| ID | Requirement | Acceptance Criterion |
+|----|-------------|----------------------|
+| R1 | [requirement from interview finding] | [measurable criterion] |
+
+## Consumer Experience
+
+- **Target persona:** [who is the primary consumer of this bundle]
+- **First-run expectations:** [what does the consumer expect to happen the very first time they use this bundle]
+- **Progressive disclosure:**
+  - Level 1: [minimal path — what works immediately with no configuration]
+  - Level 2: [what becomes available after initial setup]
+  - Level 3: [advanced use once the consumer is experienced]
+
+## Scope Exclusions
+
+What this bundle deliberately does NOT do, and why:
+
+- [Excluded capability]: [rationale — not in scope because ...]
 
 ## Components
 
@@ -134,6 +158,12 @@ Write the spec document to the working directory:
 - Level 1: [specific structural gates for this bundle]
 - Level 2: [expected philosophical score targets]
 - Level 3: [functional criteria specific to this domain]
+
+## Traceability Matrix
+
+| Requirement | Artifact | Status |
+|-------------|----------|--------|
+| R1 | [file or agent that implements it] | [pending/implemented/verified] |
 ```
 
 ## Architecture Diagram Refinement
