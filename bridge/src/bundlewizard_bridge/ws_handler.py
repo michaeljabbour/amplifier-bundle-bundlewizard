@@ -41,7 +41,14 @@ def extract_graph_block(text: str) -> tuple[dict[str, Any] | None, str]:
     last_match = matches[-1]
     raw_json = last_match.group(1).strip()
     try:
-        graph_json = json.loads(raw_json)
+        parsed = json.loads(raw_json)
+        if isinstance(parsed, dict):
+            graph_json = parsed
+        else:
+            logger.warning(
+                "bundlewizard-graph block contained valid JSON but not an object (got %s); ignoring.",
+                type(parsed).__name__,
+            )
     except json.JSONDecodeError:
         logger.warning("bundlewizard-graph block contained invalid JSON; ignoring.")
 

@@ -86,3 +86,13 @@ def test_extract_preserves_other_code_blocks():
     assert "```yaml" in clean_text
     assert "key: value" in clean_text
     assert "```bundlewizard-graph" not in clean_text
+
+
+def test_extract_graph_block_non_object_json():
+    """Valid JSON that is not a dict (e.g. a list) returns None for graph but still strips the block."""
+    text = "Before block.\n```bundlewizard-graph\n[]\n```\nAfter block."
+    graph_json, clean_text = extract_graph_block(text)
+
+    assert graph_json is None
+    assert "```bundlewizard-graph" not in clean_text
+    assert "After block." in clean_text
