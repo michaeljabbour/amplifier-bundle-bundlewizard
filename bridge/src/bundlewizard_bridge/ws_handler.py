@@ -10,9 +10,37 @@ from __future__ import annotations
 import json
 import logging
 import re
+from enum import Enum, auto
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Message routing
+# ---------------------------------------------------------------------------
+
+
+class MessageType(Enum):
+    """Enumeration of recognised WebSocket message types."""
+
+    PROMPT = auto()
+    APPROVAL_RESPONSE = auto()
+    CANVAS_EDITS = auto()
+    UNKNOWN = auto()
+
+
+def route_message(msg: dict[str, Any]) -> MessageType:
+    """Return the :class:`MessageType` for *msg* based on its ``type`` field."""
+    msg_type = msg.get("type", "")
+    if msg_type == "prompt":
+        return MessageType.PROMPT
+    if msg_type == "approval_response":
+        return MessageType.APPROVAL_RESPONSE
+    if msg_type == "canvas_edits":
+        return MessageType.CANVAS_EDITS
+    return MessageType.UNKNOWN
+
 
 # Compiled regex that matches ```bundlewizard-graph ... ``` fenced blocks.
 _GRAPH_BLOCK_RE = re.compile(
@@ -102,3 +130,46 @@ async def _execute_prompt(
 
     # Persist the clean text (not the raw AI output) in the conversation log.
     chat_log.append({"role": "assistant", "content": clean_text})
+
+
+async def handle_websocket(websocket: Any, session: Any) -> None:
+    """Handle an active WebSocket connection for the lifetime of the session.
+
+    Reads incoming JSON messages, routes them by type, and dispatches each to
+    the appropriate handler:
+
+    * ``prompt`` — forwards text to the AI session, optionally prepending any
+      pending canvas edits before clearing that state.
+    * ``approval_response`` — placeholder for future approval gate handling.
+    * ``canvas_edits`` — stores the canvas diff for injection into the next prompt.
+    * All other types are logged and discarded.
+    """
+    chat_log: list[dict[str, str]] = []
+    pending_canvas_edits: str | None = None
+
+    async for raw in websocket:
+        try:
+            msg: dict[str, Any] = json.loads(raw)
+        except json.JSONDecodeError:
+            logger.warning("Received non-JSON message; discarding.")
+            continue
+
+        msg_type = route_message(msg)
+
+        if msg_type == MessageType.PROMPT:
+            text: str = msg.get("text", "")
+            if pending_canvas_edits is not None:
+                text = f"{text}\n\n[CANVAS EDITS: {pending_canvas_edits}]"
+                pending_canvas_edits = None
+            await _execute_prompt(websocket, session, text, chat_log)
+
+        elif msg_type == MessageType.APPROVAL_RESPONSE:
+            logger.info("Received approval_response: %s", msg)
+
+        elif msg_type == MessageType.CANVAS_EDITS:
+            edits: str = str(msg.get("data", ""))
+            pending_canvas_edits = edits
+            logger.info("Stored pending canvas edits (%d chars).", len(edits))
+
+        else:
+            logger.warning("Unhandled message type '%s'; discarding.", msg.get("type"))
