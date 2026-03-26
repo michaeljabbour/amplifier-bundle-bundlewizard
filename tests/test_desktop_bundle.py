@@ -219,3 +219,33 @@ def test_visual_adapter_phase_guidance():
         assert phase in content, (
             f"desktop-visual-adapter.md must contain phase guidance for '{phase}'"
         )
+
+
+# ---------------------------------------------------------------------------
+# Story Generation section tests
+# ---------------------------------------------------------------------------
+
+
+def test_visual_adapter_has_story_generation_section():
+    """File must contain a 'Story Generation' section heading."""
+    content = _read_visual_adapter()
+    assert "## Story Generation" in content, (
+        "desktop-visual-adapter.md must contain a '## Story Generation' section"
+    )
+
+
+def test_visual_adapter_story_generation_mentions_agents():
+    """Story Generation section must mention key story agents."""
+    content = _read_visual_adapter()
+    for agent in ["storyteller", "story-researcher", "content-strategist", "technical-writer"]:
+        assert agent in content, (
+            f"desktop-visual-adapter.md must mention story agent '{agent}'"
+        )
+
+
+def test_visual_adapter_story_generation_html_format():
+    """Story Generation section must reference HTML output format."""
+    content = _read_visual_adapter()
+    assert "HTML" in content, (
+        "desktop-visual-adapter.md must mention HTML in the Story Generation section"
+    )
