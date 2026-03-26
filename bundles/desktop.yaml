@@ -1,0 +1,10 @@
+---
+bundle:
+  name: bundlewizard-desktop
+  version: 0.4.0
+  description: Bundlewizard with desktop visual canvas overlay.
+includes:
+  - bundle: bundlewizard
+---
+
+@bundlewizard:context/desktop-visual-adapter.md
