@@ -170,3 +170,31 @@ amplifier run "list pending approvals"
 amplifier run "approve recipe session <session-id> stage exploration"
 amplifier run "resume recipe session <session-id>"
 ```
+
+---
+
+## Reference: Exemplar Corpus
+
+### Known-Good Bundles
+
+Study these real bundles to internalize correct patterns before building your own.
+
+| Bundle | What It Demonstrates |
+|--------|----------------------|
+| `amplifier-bundle-recipes` | Canonical thin bundle / behavior composition / context sink agents |
+| `amplifier-bundle-superpowers` | Mode-driven workflow / skill integration / two-stage review pipeline |
+| `amplifier-bundle-modes` | Module + behavior composition / hooks integration |
+| `amplifier-bundle-python-dev` | Tool module + hook integration / per-agent tool mounting |
+| `amplifier-bundle-lsp` | Cross-language capability / tool + context pattern |
+
+### Anti-Pattern Examples
+
+These real mistakes have appeared in generated bundles. Know them; avoid them.
+
+| Anti-Pattern | What's Wrong | Fix |
+|--------------|-------------|-----|
+| Monolith bundle.md | All instructions, context, and agent prompts crammed into one file. Impossible to maintain, context-bloated, and breaks the thin-bundle principle. | Split into `bundle.md` (wiring only) + `behaviors/` (capabilities) + `context/` (reference docs) + `agents/` (per-agent prompts). |
+| Context everywhere | Every agent includes the same heavyweight context file, loading 10 KB per agent call that 90% of agents never use. | Use a context-sink agent pattern: one designated aggregator agent gets the heavy context; lightweight agents receive only what they need. |
+| Agents without examples | Agent descriptions say what the agent is but not when to delegate to it. Orchestrators guess wrong or ignore the agent entirely. | Every agent description must include at least one concrete `<example>` block with user intent, assistant action, and commentary explaining the routing decision. |
+| Circular includes | behavior-A includes behavior-B which includes behavior-A. Loader either errors or silently drops one include, producing unpredictable composition. | Draw the include graph before writing YAML. Every include edge must be a DAG — no cycles allowed. |
+| Star topology | One orchestrator agent delegates to 8+ specialized sub-agents directly. Intent gets diluted through re-delegation and the orchestrator becomes a bottleneck. | Introduce mid-tier coordinators for related capability clusters, or flatten by composing behaviors directly into fewer, more capable agents. |

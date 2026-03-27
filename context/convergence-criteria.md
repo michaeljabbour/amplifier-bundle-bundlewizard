@@ -112,3 +112,61 @@ The evaluator delegates to the appropriate **domain expert** for functional asse
 2. **checkpoint_best** — Save the highest-scoring iteration. If convergence stalls, deliver the best achieved.
 3. **Patience counter** — If score hasn't improved in 3 iterations, trigger diagnosis: are we refining the right things?
 4. **Never silently declare done** — Convergence is a measured state, not a feeling.
+
+---
+
+## Traceability
+
+Every requirement from the interview must map to at least one artifact in the delivered bundle. The traceability matrix makes that mapping explicit and auditable.
+
+### Lifecycle
+
+1. **Spec-writer populates R-IDs from interview** — During the spec phase, the spec-writer assigns a unique requirement ID (e.g. `R-001`, `R-002`) to every stated need captured from the user interview. These IDs anchor the matrix.
+
+2. **Evaluator fills artifact mappings after each iteration** — After each refinement cycle, the evaluator records which bundle artifacts (agents, context files, modes, recipes) satisfy each R-ID. A single artifact may satisfy multiple requirements; a single requirement may require multiple artifacts.
+
+3. **Critic validates for orphaned artifacts and unmet requirements** — The critic reviews the completed matrix looking for two failure modes:
+   - **Unmet requirements**: R-IDs with no artifact mapping (nothing delivers the stated need)
+   - **Orphaned artifacts**: bundle files that satisfy no R-ID (present but unjustified by requirements)
+
+### Scoring
+
+Traceability is binary — it does not blend into the Level 2 or Level 3 scores:
+
+| Result | Condition |
+|--------|-----------|
+| **PASS** | Every R-ID maps to at least one artifact; every artifact maps to at least one R-ID |
+| **FLAG** | One or more orphaned artifacts (artifacts present but no requirement justifies them) |
+| **FAIL** | Any unmet requirement (an R-ID has no artifact coverage) |
+
+An orphaned artifact is a FLAG rather than a hard FAIL because it may indicate scope creep (worth reviewing) rather than a broken requirement. An unmet requirement is always a FAIL.
+
+---
+
+## Triangulation
+
+Triangulation is a cross-check, not a new convergence level. It does not introduce a fourth gate or modify the convergence formula. Its purpose is to detect hidden disagreements between what the bundle claims to do, how it is structured, and whether it actually works.
+
+### Three Dimensions
+
+| Leg | What It Checks | Evidence Source |
+|-----|---------------|-----------------|
+| **Intent** | Does the bundle address what was asked? | Traceability matrix (R-ID coverage) |
+| **Structure** | Is the bundle built the right way? | L2 philosophical score + exemplar patterns from bundle-reference skill |
+| **Function** | Does the bundle do what it claims? | L3 functional score + shadow smoke test |
+
+### Cross-Check Rule
+
+If any two legs disagree, flag the bundle for review before delivery. Agreement across all three legs is a strong signal that the bundle is ready.
+
+**Examples of disagreements that trigger review:**
+
+1. **Intent ✓, Structure ✓, Function ✗** — The bundle satisfies the requirements and is correctly structured, but the smoke test reveals a broken execution path. The structural correctness may be masking a runtime wiring error.
+
+2. **Intent ✓, Structure ✗, Function ✓** — The bundle appears to work but violates philosophical patterns (e.g. context loaded at root instead of agent-scoped). Functional success may be fragile or coincidental; structure issues should be corrected before delivery.
+
+3. **Intent ✗, Structure ✓, Function ✓** — The bundle is well-built and operational, but doesn't address one or more stated requirements. The user asked for X and the bundle delivers Y instead, even if Y works correctly.
+
+### Triangulation is a Signal, Not a Gate
+
+Triangulation does not override the convergence formula. A bundle with `level_1 == PASS`, `level_2 >= 0.85`, and `level_3 >= 0.80` is converged. Triangulation may prompt a targeted re-evaluation or clarification, but it cannot unilaterally block delivery. Its value is in surfacing subtle misalignment before the user receives a bundle that passes all gates yet still misses the mark.

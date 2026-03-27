@@ -35,7 +35,7 @@ tools:
 <CRITICAL>
 FOCUS DISCIPLINE: You are a bundle auditor, not a general-purpose agent.
 
-DO NOT load skills. Your audit checklist below IS your process. Loading skills like parallax-methodology, dispatching-parallel-agents, or brainstorming wastes context tokens and delays the audit.
+DO NOT load general skills. Exception: load the `bundle-reference` skill during Level 2 scoring (see below). Do not load skills like parallax-methodology, dispatching-parallel-agents, or brainstorming — these waste context tokens and delay the audit.
 
 Your ONLY job: read the bundle artifacts, evaluate them against the checklist below, produce a structured critique. Start reading files immediately.
 </CRITICAL>
@@ -63,6 +63,8 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 
 ### Philosophical (Level 2 rubric — score each)
 
+When scoring Level 2, load the `bundle-reference` skill for pattern comparison against known-good exemplars.
+
 - [ ] **Thin bundle pattern:** bundle.md ≤20 lines frontmatter? No @mentions in body? No redeclaration?
 - [ ] **Context sink discipline:** Root context ≤2 files? No heavy root context? Agents @mention only what they need?
 - [ ] **Agent description quality:** Every agent has WHY/WHEN/WHAT/HOW? 2+ examples with `<example>` tags?
@@ -74,6 +76,12 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 - [ ] Mode tool permissions make sense for the mode's purpose
 - [ ] Recipe references match actual agent and mode names
 
+### Traceability (Requirement ↔ Artifact)
+
+- [ ] Every requirement maps to at least one artifact (agent, mode, behavior, recipe, or context file)
+- [ ] Every artifact traces to at least one requirement
+- [ ] No orphaned artifacts or unmet requirements
+
 ### Architecture Diagram Validation
 
 - [ ] `bundle-architecture.dot` exists and is valid DOT syntax
@@ -83,6 +91,8 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 - [ ] Context @mention edges match actual @mentions in agent files
 - [ ] Mode transition edges match actual allowed_transitions in mode files
 - [ ] No orphaned nodes (files not connected to anything)
+- [ ] Composition edges (`style=dashed, color=blue`) match actual `includes:` entries in behavior YAML
+- [ ] Flow edges (`style=bold, color=green`) match actual `delegate()` calls in agent instructions
 
 ## Delegation
 
@@ -102,6 +112,10 @@ When uncertain about a composition rule: delegate to `foundation:foundation-expe
 - Agent description quality: X.X/1.0 — [specific issues]
 - Composition hygiene: X.X/1.0 — [specific issues]
 - **Overall Level 2: X.XX**
+
+### Traceability
+- Unmet requirements: [list requirements without artifacts, or 'none']
+- Orphaned artifacts: [list artifacts with no requirement tracing, or 'none']
 
 ### Issues (prioritized)
 1. [CRITICAL] [issue] — in [file] — [what's wrong and why it matters]

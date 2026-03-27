@@ -36,6 +36,23 @@ Every factory produces an evolving `bundle-architecture.dot` file:
 
 The diagram serves as a visual contract — a single artifact that everyone can point to and say "this is what we're building." Discrepancies between the diagram and the artifacts are bugs.
 
+### DOT Edge Schema
+
+Use consistent edge styles so diagrams are self-documenting across all factories:
+
+| Edge type | Style | Meaning | Example |
+|-----------|-------|---------|---------|
+| Delegation | (solid black, default) | One agent hands work to another | `bundle-explorer -> bundle-spec-writer` |
+| Context load | `[style=dotted]` | A file or document is loaded into context | `spec_md -> bundle-plan-writer [style=dotted]` |
+| Composition | `[style=dashed, color=blue]` | A bundle or behavior is composed/included | `behaviors/convergence -> bundle-execute [style=dashed, color=blue]` |
+| Agentic flow | `[style=bold, color=green]` | Primary agent-to-agent execution flow | `bundle-generator -> bundle-critic [style=bold, color=green]` |
+| Mode transition | `[style=dashed, color=orange]` | User or recipe transitions between modes | `explore_mode -> spec_mode [style=dashed, color=orange]` |
+
+**Subgraph guidance:**
+
+- `cluster_local` — group files and agents that live in this bundle
+- `cluster_external` — group things from other namespaces (e.g., `foundation:explorer`, shared behaviors from other bundles)
+
 The Execute stage contains the **convergence loop**: generator → critic → refiner → evaluator, repeated until convergence criteria are met or patience exhausts.
 
 ## Convergence Loop Protocol
