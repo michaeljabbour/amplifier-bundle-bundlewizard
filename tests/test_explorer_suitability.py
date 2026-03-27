@@ -42,40 +42,52 @@ def test_explorer_has_suitability_check():
 
 
 def test_explorer_suitability_table_content():
-    """Job 0 table must contain all four signal/action rows with correct content."""
+    """Job 0 table must contain all four signal/action rows with correct paired content.
+
+    Validates row-level pairings — each signal must be matched with its correct action
+    on the same markdown table row, and there must be exactly four data rows.
+    """
     explorer = _load_explorer()
 
-    # Row 1: Custom Python modules → partial scope
-    assert "Needs custom Python modules" in explorer, (
-        "Expected row for 'Needs custom Python modules' in Job 0 suitability table"
+    # Extract the Job 0 section to scope all assertions to that section only
+    assert "### Job 0: Suitability Check" in explorer, (
+        "Prerequisite: '### Job 0: Suitability Check' must exist before checking table content"
     )
-    assert "Flag as partial scope" in explorer, (
-        "Expected 'Flag as partial scope' action in Job 0 suitability table"
+    assert "### Job 1: Determine the Path" in explorer, (
+        "Prerequisite: '### Job 1: Determine the Path' must exist as the section boundary"
+    )
+    job0_start = explorer.index("### Job 0: Suitability Check")
+    job1_start = explorer.index("### Job 1: Determine the Path")
+    job0_section = explorer[job0_start:job1_start]
+
+    # Parse table data rows (skip header row and separator row)
+    table_rows = [
+        line
+        for line in job0_section.splitlines()
+        if line.startswith("|")
+        and not line.startswith("| Signal")
+        and not line.startswith("|---")
+    ]
+
+    assert len(table_rows) == 4, (
+        f"Expected exactly 4 data rows in the Job 0 suitability table, "
+        f"got {len(table_rows)}:\n" + "\n".join(table_rows)
     )
 
-    # Row 2: Trivial 5-line behavior → quick path
-    assert "Trivially a 5-line behavior" in explorer, (
-        "Expected row for 'Trivially a 5-line behavior' in Job 0 suitability table"
-    )
-    assert "Suggest quick path" in explorer, (
-        "Expected 'Suggest quick path' action in Job 0 suitability table"
-    )
+    # Each signal must be paired with the correct action on the same row
+    expected_pairs = [
+        ("Needs custom Python modules", "Flag as partial scope"),
+        ("Trivially a 5-line behavior", "Suggest quick path"),
+        ("Needs full dev-machine setup", "Steer toward dev-machine"),
+        ("Fits bundlewizard", "Proceed to Job 1"),
+    ]
 
-    # Row 3: Full dev-machine setup → steer toward dev-machine
-    assert "Needs full dev-machine setup" in explorer, (
-        "Expected row for 'Needs full dev-machine setup' in Job 0 suitability table"
-    )
-    assert "Steer toward dev-machine" in explorer, (
-        "Expected 'Steer toward dev-machine' action in Job 0 suitability table"
-    )
-
-    # Row 4: Fits bundlewizard → proceed to Job 1
-    assert "Fits bundlewizard" in explorer, (
-        "Expected row for 'Fits bundlewizard' in Job 0 suitability table"
-    )
-    assert "Proceed to Job 1" in explorer, (
-        "Expected 'Proceed to Job 1' action in Job 0 suitability table"
-    )
+    for signal, action in expected_pairs:
+        matching = [row for row in table_rows if signal in row and action in row]
+        assert matching, (
+            f"Expected a Job 0 table row pairing signal '{signal}' with action '{action}'. "
+            f"No such row found. Table rows:\n" + "\n".join(table_rows)
+        )
 
 
 def test_explorer_suitability_skip_logic():
@@ -113,9 +125,55 @@ def test_explorer_has_consumer_question():
 
 
 def test_explorer_consumer_question_is_number_six():
-    """Consumer context must be numbered as item 6 in the Create New interview sequence."""
+    """Consumer context must be numbered as item 6, and Q1–Q6 must appear in order.
+
+    Validates the full ordered sequence within the For Create New section so that
+    reordering or removing earlier questions causes a failure, not just Q6 being absent.
+    """
     explorer = _load_explorer()
+
+    # Q6 must carry the correct label
     assert "6. **Consumer context**" in explorer, (
         "Expected 'Consumer context' to be numbered as item 6 in the Create New "
         "interview sequence in agents/bundle-explorer.md"
     )
+
+    # Extract the For Create New section to scope sequence checks
+    assert "**For Create New" in explorer, (
+        "Prerequisite: '**For Create New' section must exist"
+    )
+    assert "**For Improve Existing:**" in explorer, (
+        "Prerequisite: '**For Improve Existing:**' section must exist as boundary"
+    )
+    create_new_start = explorer.index("**For Create New")
+    improve_start = explorer.index("**For Improve Existing:**")
+    create_new_section = explorer[create_new_start:improve_start]
+
+    # All six questions must be present in the section
+    expected_questions = [
+        ("1.", "What problem does this solve"),
+        ("2.", "Ecosystem check"),
+        ("3.", "What tier"),
+        ("4.", "What capabilities"),
+        ("5.", "Delegation decisions"),
+        ("6.", "Consumer context"),
+    ]
+
+    for num, phrase in expected_questions:
+        assert phrase in create_new_section, (
+            f"Expected question {num} (containing '{phrase}') in the 'For Create New' "
+            f"section of agents/bundle-explorer.md"
+        )
+
+    # Questions must appear in ascending order (Q1 before Q2 before … before Q6)
+    positions = [
+        (num, phrase, create_new_section.index(phrase))
+        for num, phrase in expected_questions
+    ]
+    for i in range(len(positions) - 1):
+        curr_num, curr_phrase, curr_pos = positions[i]
+        next_num, next_phrase, next_pos = positions[i + 1]
+        assert curr_pos < next_pos, (
+            f"Question {curr_num} ('{curr_phrase}') must appear before "
+            f"question {next_num} ('{next_phrase}') in the 'For Create New' section"
+        )
