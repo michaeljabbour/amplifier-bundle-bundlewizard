@@ -29,32 +29,46 @@ from conftest import (
 
 SPEC_WRITER_MD = AGENTS_DIR / "bundle-spec-writer.md"
 
+BUNDLE_SPEC_TEMPLATE_HEADING = "# Bundle Specification:"
+BUNDLE_SPEC_TEMPLATE_BLOCK_RE = re.compile(
+    rf"```markdown\n(?P<block>{re.escape(BUNDLE_SPEC_TEMPLATE_HEADING)}.*?\n)```",
+    re.DOTALL,
+)
+PRODUCE_BUNDLE_SPEC_STEP_TITLE = "Produce bundle-spec.md"
+PRODUCE_BUNDLE_SPEC_STEP_HEADING_RE = re.compile(
+    rf"^#{{1,4}} [^\n]*{re.escape(PRODUCE_BUNDLE_SPEC_STEP_TITLE)}",
+    re.MULTILINE,
+)
+
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
 
 
+def _bundle_spec_template_match(text: str) -> re.Match[str]:
+    """Return the anchored regex match for the bundle-spec markdown template block."""
+    match = BUNDLE_SPEC_TEMPLATE_BLOCK_RE.search(text)
+    assert match, (
+        f"No bundle spec template block ({BUNDLE_SPEC_TEMPLATE_HEADING}) found"
+    )
+    return match
+
+
 def _extract_template_block(text: str) -> str:
-    """Extract the content of the first ```markdown … ``` code block.
+    """Extract the bundle-spec markdown template block.
 
     Returns the raw inner text (without the fence lines) so tests can assert
     on template section headings independently of the surrounding prose.
+    Anchors on the known ``# Bundle Specification:`` heading so earlier
+    markdown examples do not get mistaken for the template.
     """
-    match = re.search(r"```markdown\n(.*?)```", text, re.DOTALL)
-    assert match, "No ```markdown code block found in bundle-spec-writer.md"
-    return match.group(1)
-
-
-@functools.lru_cache(maxsize=1)
-def _spec_writer_text() -> str:
-    """Return the cached bundle-spec-writer instructions."""
-    return required_text(SPEC_WRITER_MD)
+    return _bundle_spec_template_match(text).group("block")
 
 
 @functools.lru_cache(maxsize=1)
 def _spec_template_block() -> str:
     """Return the cached bundle-spec markdown template block."""
-    return _extract_template_block(_spec_writer_text())
+    return _extract_template_block(required_text(SPEC_WRITER_MD))
 
 
 @functools.lru_cache(maxsize=None)
@@ -63,18 +77,39 @@ def _spec_template_section(heading: str, *, level: int = 2) -> str:
     return extract_markdown_section(_spec_template_block(), heading, level=level)
 
 
-def _extract_step5_prose(text: str) -> str:
-    """Extract the prose for Step 5 before the markdown template block."""
-    section = extract_markdown_section(text, "5. Produce bundle-spec.md", level=3)
-    prose, fence, _ = section.partition("```markdown")
-    assert fence, "No ```markdown fence found in Step 5 section"
-    return prose
+def _extract_produce_bundle_spec_step_prose(text: str) -> str:
+    """Extract the prose for the 'Produce bundle-spec.md' step before the template block.
+
+    Tolerates step renumbering (e.g. '4.' vs '5.') as long as the title fragment
+    'Produce bundle-spec.md' remains in the heading.  Locates the bundle spec
+    template fence by anchoring on the known '# Bundle Specification:' start
+    rather than assuming the first ```markdown fence is the template.
+    """
+    # Find the step heading by title fragment, tolerating renumbering
+    m = PRODUCE_BUNDLE_SPEC_STEP_HEADING_RE.search(text)
+    assert m, f"No heading containing {PRODUCE_BUNDLE_SPEC_STEP_TITLE!r} found"
+
+    # Search forward from the heading for the template fence anchored on its known start.
+    # We search the full remaining text so headings inside the template code block
+    # (e.g. "## Overview") do not accidentally truncate the search window.
+    step_tail = text[m.end() :]
+    template = _bundle_spec_template_match(step_tail)
+    return step_tail[: template.start()]
 
 
 @functools.lru_cache(maxsize=1)
-def _step5_prose() -> str:
-    """Return the cached prose for Step 5 before the markdown template block."""
-    return _extract_step5_prose(_spec_writer_text())
+def _produce_bundle_spec_step_prose() -> str:
+    """Return the cached prose for the Produce bundle-spec.md step."""
+    return _extract_produce_bundle_spec_step_prose(required_text(SPEC_WRITER_MD))
+
+
+def test_extract_template_block_prefers_bundle_spec_template():
+    """The bundle-spec template helper must ignore earlier markdown examples."""
+    sample = """### 1. Example\n\n```markdown\n# Example scaffold\n```\n\n### 5. Produce bundle-spec.md\n\nIntro prose.\n\n```markdown\n# Bundle Specification: demo\n## Overview\n```\n"""
+
+    assert _extract_template_block(sample).startswith(BUNDLE_SPEC_TEMPLATE_HEADING), (
+        "Template extraction must anchor on the bundle-spec template block"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -297,7 +332,7 @@ def test_traceability_matrix_appears_after_convergence():
 
 def test_step5_mentions_requirements():
     """Step 5 prose (outside the template block) must reference Requirements."""
-    step5_prose = _step5_prose()
+    step5_prose = _produce_bundle_spec_step_prose()
     assert re.search(r"[Rr]equirements", step5_prose), (
         "Step 5 instructions must reference Requirements"
     )
@@ -305,7 +340,7 @@ def test_step5_mentions_requirements():
 
 def test_step5_mentions_consumer_experience():
     """Step 5 prose must reference Consumer Experience."""
-    step5_prose = _step5_prose()
+    step5_prose = _produce_bundle_spec_step_prose()
     assert re.search(r"[Cc]onsumer [Ee]xperience", step5_prose), (
         "Step 5 instructions must reference Consumer Experience"
     )
@@ -313,7 +348,7 @@ def test_step5_mentions_consumer_experience():
 
 def test_step5_mentions_scope_exclusions():
     """Step 5 prose must reference Scope Exclusions."""
-    step5_prose = _step5_prose()
+    step5_prose = _produce_bundle_spec_step_prose()
     assert re.search(r"[Ss]cope [Ee]xclusions", step5_prose), (
         "Step 5 instructions must reference Scope Exclusions"
     )
@@ -321,7 +356,7 @@ def test_step5_mentions_scope_exclusions():
 
 def test_step5_mentions_r_id():
     """Step 5 instructions must reference R-ID (one per interview finding)."""
-    step5_prose = _step5_prose()
+    step5_prose = _produce_bundle_spec_step_prose()
     assert re.search(r"R-ID|R\d+", step5_prose), (
         "Step 5 instructions must reference R-ID requirement identifiers"
     )

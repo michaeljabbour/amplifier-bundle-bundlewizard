@@ -16,6 +16,7 @@ This test suite validates that context/convergence-criteria.md contains:
 """
 
 import functools
+import re
 
 from conftest import CONTEXT_DIR, extract_markdown_section, required_text
 
@@ -28,14 +29,8 @@ CONVERGENCE_MD = CONTEXT_DIR / "convergence-criteria.md"
 
 
 @functools.lru_cache(maxsize=None)
-def _convergence_text() -> str:
-    """Return the cached raw text of context/convergence-criteria.md."""
-    return required_text(CONVERGENCE_MD)
-
-
-@functools.lru_cache(maxsize=None)
 def _convergence_section(heading: str, *, level: int = 2) -> str:
-    return extract_markdown_section(_convergence_text(), heading, level=level)
+    return extract_markdown_section(required_text(CONVERGENCE_MD), heading, level=level)
 
 
 @functools.lru_cache(maxsize=None)
@@ -45,23 +40,26 @@ def _convergence_subsection(parent_heading: str, heading: str) -> str:
     )
 
 
+def _table_row_containing(section: str, label: str) -> str:
+    """Return the first markdown table row that contains *label*, or ``""``."""
+    for line in section.splitlines():
+        if line.lstrip().startswith("|") and label in line:
+            return line
+    return ""
+
+
 # ---------------------------------------------------------------------------
 # Traceability Section: Basic Structure
 # ---------------------------------------------------------------------------
 
 
-def test_traceability_has_lifecycle_subsection():
-    """Traceability section must have a ### Lifecycle subsection."""
-    assert "### Lifecycle" in _convergence_section("Traceability"), (
-        "Traceability section must contain a '### Lifecycle' subsection"
-    )
-
-
-def test_traceability_has_scoring_subsection():
-    """Traceability section must have a ### Scoring subsection."""
-    assert "### Scoring" in _convergence_section("Traceability"), (
-        "Traceability section must contain a '### Scoring' subsection"
-    )
+def test_traceability_has_required_subsections():
+    """Traceability section must have both ### Lifecycle and ### Scoring subsections."""
+    traceability_section = _convergence_section("Traceability")
+    for subsection in ("### Lifecycle", "### Scoring"):
+        assert subsection in traceability_section, (
+            f"Traceability section must contain a '{subsection}' subsection"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -69,29 +67,14 @@ def test_traceability_has_scoring_subsection():
 # ---------------------------------------------------------------------------
 
 
-def test_traceability_lifecycle_mentions_spec_writer():
-    """Lifecycle must document the spec-writer's role in populating R-IDs."""
+def test_traceability_lifecycle_actor_roles():
+    """Lifecycle must document all three actor roles and reference R-IDs."""
     lifecycle_section = _convergence_subsection("Traceability", "Lifecycle")
-    assert "spec-writer" in lifecycle_section.lower(), (
-        "Traceability Lifecycle must mention 'spec-writer' as a role"
-    )
+    for role in ("spec-writer", "evaluator", "critic"):
+        assert role in lifecycle_section.lower(), (
+            f"Traceability Lifecycle must mention '{role}' as a role"
+        )
     assert "R-ID" in lifecycle_section, "Traceability Lifecycle must reference R-IDs"
-
-
-def test_traceability_lifecycle_mentions_evaluator():
-    """Lifecycle must document the evaluator's role in filling artifact mappings."""
-    lifecycle_section = _convergence_subsection("Traceability", "Lifecycle")
-    assert "evaluator" in lifecycle_section.lower(), (
-        "Traceability Lifecycle must mention 'evaluator' as a role"
-    )
-
-
-def test_traceability_lifecycle_mentions_critic():
-    """Lifecycle must document the critic's role in validating the matrix."""
-    lifecycle_section = _convergence_subsection("Traceability", "Lifecycle")
-    assert "critic" in lifecycle_section.lower(), (
-        "Traceability Lifecycle must mention 'critic' as a role"
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -99,28 +82,13 @@ def test_traceability_lifecycle_mentions_critic():
 # ---------------------------------------------------------------------------
 
 
-def test_traceability_scoring_has_pass_outcome():
-    """Scoring must define PASS as a traceability outcome."""
+def test_traceability_scoring_outcomes():
+    """Scoring must define PASS, FLAG, and FAIL as traceability outcomes."""
     scoring_section = _convergence_subsection("Traceability", "Scoring")
-    assert "**PASS**" in scoring_section, (
-        "Traceability Scoring must include '**PASS**' as an outcome"
-    )
-
-
-def test_traceability_scoring_has_flag_outcome():
-    """Scoring must define FLAG as a traceability outcome (orphaned artifacts)."""
-    scoring_section = _convergence_subsection("Traceability", "Scoring")
-    assert "**FLAG**" in scoring_section, (
-        "Traceability Scoring must include '**FLAG**' as an outcome"
-    )
-
-
-def test_traceability_scoring_has_fail_outcome():
-    """Scoring must define FAIL as a traceability outcome (unmet requirements)."""
-    scoring_section = _convergence_subsection("Traceability", "Scoring")
-    assert "**FAIL**" in scoring_section, (
-        "Traceability Scoring must include '**FAIL**' as an outcome"
-    )
+    for outcome in ("**PASS**", "**FLAG**", "**FAIL**"):
+        assert outcome in scoring_section, (
+            f"Traceability Scoring must include '{outcome}' as an outcome"
+        )
 
 
 def test_traceability_distinguishes_orphaned_vs_unmet():
@@ -147,9 +115,9 @@ def test_traceability_scoring_is_binary():
     assert "binary" in traceability_section.lower(), (
         "Traceability Scoring must state that scoring is binary"
     )
-    assert (
-        "not blend" in traceability_section.lower()
-        or "does not blend" in traceability_section.lower()
+    # Tolerate 'does not blend' and 'not blend' as equivalent phrasings
+    assert re.search(
+        r"does\s+not\s+blend|not\s+blend", traceability_section, re.IGNORECASE
     ), "Traceability Scoring must state it does not blend into Level 2 or Level 3"
 
 
@@ -158,18 +126,13 @@ def test_traceability_scoring_is_binary():
 # ---------------------------------------------------------------------------
 
 
-def test_triangulation_has_three_dimensions_subsection():
-    """Triangulation section must have a ### Three Dimensions subsection."""
-    assert "### Three Dimensions" in _convergence_section("Triangulation"), (
-        "Triangulation section must contain a '### Three Dimensions' subsection"
-    )
-
-
-def test_triangulation_has_cross_check_rule_subsection():
-    """Triangulation section must have a ### Cross-Check Rule subsection."""
-    assert "### Cross-Check Rule" in _convergence_section("Triangulation"), (
-        "Triangulation section must contain a '### Cross-Check Rule' subsection"
-    )
+def test_triangulation_has_required_subsections():
+    """Triangulation section must have Three Dimensions and Cross-Check Rule subsections."""
+    triangulation_section = _convergence_section("Triangulation")
+    for subsection in ("### Three Dimensions", "### Cross-Check Rule"):
+        assert subsection in triangulation_section, (
+            f"Triangulation section must contain a '{subsection}' subsection"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -177,45 +140,44 @@ def test_triangulation_has_cross_check_rule_subsection():
 # ---------------------------------------------------------------------------
 
 
-def test_triangulation_three_dimensions_has_intent():
-    """Three Dimensions must include Intent as a leg."""
+def test_triangulation_three_dimensions_content():
+    """Three Dimensions must include all three legs with correct score references.
+
+    Table-driven check: each leg's table row must reference the appropriate
+    scoring layer (via any accepted alias).  The keyword search is scoped to
+    the specific row so a keyword appearing elsewhere in the section cannot
+    satisfy the assertion.
+    """
     dimensions_section = _convergence_subsection("Triangulation", "Three Dimensions")
-    assert "**Intent**" in dimensions_section, (
-        "Triangulation Three Dimensions must include '**Intent**' as a leg"
+
+    # (bold label, accepted keywords that must appear in *that leg's own row*)
+    legs = [
+        ("**Intent**", ["traceability", "r-id"]),
+        ("**Structure**", ["level 2", "l2", "philosophical"]),
+        ("**Function**", ["level 3", "l3", "functional", "smoke test"]),
+    ]
+    for label, keywords in legs:
+        row = _table_row_containing(dimensions_section, label)
+        assert row, f"Triangulation Three Dimensions must include '{label}' as a leg"
+        assert any(kw in row.lower() for kw in keywords), (
+            f"{label.strip('*')} row must reference one of {keywords!r}; got: {row!r}"
+        )
+
+
+def test_table_row_containing_ignores_non_table_mentions():
+    """Row lookup must ignore prose mentions and stay scoped to markdown tables."""
+    sample = "\n".join(
+        [
+            "Note: **Intent** is validated elsewhere in the document.",
+            "| Leg | Evidence Source |",
+            "|-----|-----------------|",
+            "| **Intent** | Traceability matrix (R-ID coverage) |",
+        ]
     )
-    # Intent should check requirements (R-ID coverage / Traceability)
-    assert (
-        "intent" in dimensions_section.lower()
-        and "traceability" in dimensions_section.lower()
-    ), "Intent leg must reference Traceability matrix (R-ID coverage)"
 
-
-def test_triangulation_three_dimensions_has_structure():
-    """Three Dimensions must include Structure as a leg."""
-    dimensions_section = _convergence_subsection("Triangulation", "Three Dimensions")
-    assert "**Structure**" in dimensions_section, (
-        "Triangulation Three Dimensions must include '**Structure**' as a leg"
+    assert _table_row_containing(sample, "**Intent**") == (
+        "| **Intent** | Traceability matrix (R-ID coverage) |"
     )
-    # Structure should check L2 (philosophical) score
-    assert "structure" in dimensions_section.lower() and (
-        "level 2" in dimensions_section.lower()
-        or "l2" in dimensions_section.lower()
-        or "philosophical" in dimensions_section.lower()
-    ), "Structure leg must reference Level 2 philosophical score"
-
-
-def test_triangulation_three_dimensions_has_function():
-    """Three Dimensions must include Function as a leg."""
-    dimensions_section = _convergence_subsection("Triangulation", "Three Dimensions")
-    assert "**Function**" in dimensions_section, (
-        "Triangulation Three Dimensions must include '**Function**' as a leg"
-    )
-    # Function should check L3 (functional) score
-    assert "function" in dimensions_section.lower() and (
-        "level 3" in dimensions_section.lower()
-        or "l3" in dimensions_section.lower()
-        or "functional" in dimensions_section.lower()
-    ), "Function leg must reference Level 3 functional score"
 
 
 # ---------------------------------------------------------------------------
@@ -231,21 +193,40 @@ def test_triangulation_includes_disagreement_examples():
     assert "disagree" in triangulation_section.lower(), (
         "Triangulation must discuss disagreement scenarios"
     )
-    assert (
-        "examples" in triangulation_section.lower()
-        or "example" in triangulation_section.lower()
-    ), "Triangulation should provide examples of disagreements"
+    assert "example" in triangulation_section.lower(), (
+        "Triangulation should provide examples of disagreements"
+    )
 
 
 def test_triangulation_has_intent_structure_function_disagreement():
-    """Must include example: Intent ✓, Structure ✓, Function ✗."""
+    """Must include example: Intent pass, Structure pass, Function fail (smoke test/runtime)."""
     section = _convergence_subsection("Triangulation", "Cross-Check Rule")
 
-    assert "Intent \u2713, Structure \u2713, Function \u2717" in section, (
-        "Cross-Check Rule must contain the example label 'Intent ✓, Structure ✓, Function ✗'"
+    # All three dimensions must appear in the examples
+    for dimension in ("Intent", "Structure", "Function"):
+        assert dimension in section, (
+            f"Cross-Check Rule must reference '{dimension}' in a disagreement example"
+        )
+
+    # Scope the check to the specific numbered example block so keywords
+    # appearing in neighboring examples do not create a false positive.
+    example_match = re.search(
+        r"^\s*\d+\.\s+\*\*Intent\s*✓,\s*Structure\s*✓,\s*Function\s*✗\*\*"
+        r"(?P<body>.*?)(?=^\s*\d+\. |\Z)",
+        section,
+        re.MULTILINE | re.DOTALL,
     )
-    assert "smoke test" in section.lower(), (
-        "Cross-Check Rule first disagreement example must mention 'smoke test'"
+    assert example_match, (
+        "Cross-Check Rule must contain the Intent✓/Structure✓/Function✗ disagreement example"
+    )
+    example_block = example_match.group(0).lower()
+
+    # The Intent✓/Structure✓/Function✗ example must mention the smoke test / runtime failure
+    assert "smoke test" in example_block, (
+        "Cross-Check Rule must include an example mentioning 'smoke test'"
+    )
+    assert "runtime" in example_block, (
+        "Cross-Check Rule example must mention the runtime failure scenario"
     )
 
 
@@ -254,11 +235,9 @@ def test_triangulation_has_intent_structure_function_disagreement_descriptions()
     section = _convergence_subsection("Triangulation", "Cross-Check Rule")
 
     # Examples should explain the consequences/signals
-    assert (
-        "fragile" in section.lower()
-        or "runtime" in section.lower()
-        or "error" in section.lower()
-    ), "Disagreement examples must explain the technical implications"
+    assert "fragile" in section.lower() or "error" in section.lower(), (
+        "Disagreement examples must explain the technical implications"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -271,10 +250,9 @@ def test_triangulation_does_not_override_convergence_formula():
     triangulation_section = _convergence_section("Triangulation")
 
     # The Triangulation section should explicitly state it cannot override the formula
-    assert (
-        "does not override" in triangulation_section.lower()
-        or "not override" in triangulation_section.lower()
-    ), "Triangulation must state it does not override the convergence formula"
+    assert "not override" in triangulation_section.lower(), (
+        "Triangulation must state it does not override the convergence formula"
+    )
 
 
 def test_triangulation_is_signal_not_gate():
@@ -300,7 +278,7 @@ def test_triangulation_agreement_is_validation():
 
 def test_traceability_before_triangulation():
     """Traceability section must appear before Triangulation in the document."""
-    text = _convergence_text()
+    text = required_text(CONVERGENCE_MD)
 
     traceability_pos = text.index("## Traceability")
     triangulation_pos = text.index("## Triangulation")
@@ -311,13 +289,24 @@ def test_traceability_before_triangulation():
 
 
 def test_convergence_formula_remains_central():
-    """The three-level convergence formula must remain the central structure."""
-    text = _convergence_text()
+    """The three-level convergence formula section must appear before Traceability/Triangulation."""
+    text = required_text(CONVERGENCE_MD)
 
-    # Formula should appear near the beginning, before Traceability and Triangulation
-    formula_pos = text.index("converged = (level_1 == PASS)")
+    # The Convergence Formula section must precede the Traceability section
+    formula_section_pos = text.index("## Convergence Formula")
     traceability_pos = text.index("## Traceability")
-
-    assert formula_pos < traceability_pos, (
-        "Convergence formula must appear before and centrally to Traceability/Triangulation sections"
+    assert formula_section_pos < traceability_pos, (
+        "Convergence Formula section must appear before Traceability/Triangulation sections"
     )
+
+    # The formula section must contain the key invariants of the 3-level formula
+    formula_section = _convergence_section("Convergence Formula")
+    for token in ("level_1", "level_2", "level_3", "PASS"):
+        assert token in formula_section, (
+            f"Convergence Formula section must contain the key token '{token}'"
+        )
+    # Level 2 and Level 3 threshold values must both be present.
+    for threshold in ("0.85", "0.80"):
+        assert threshold in formula_section, (
+            f"Convergence Formula must contain the threshold value '{threshold}'"
+        )
