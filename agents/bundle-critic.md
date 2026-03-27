@@ -74,6 +74,12 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 - [ ] Mode tool permissions make sense for the mode's purpose
 - [ ] Recipe references match actual agent and mode names
 
+### Traceability (Requirement ↔ Artifact)
+
+- [ ] Every requirement maps to at least one artifact (agent, mode, behavior, recipe, or context file)
+- [ ] Every artifact traces to at least one requirement
+- [ ] No orphaned artifacts or unmet requirements
+
 ### Architecture Diagram Validation
 
 - [ ] `bundle-architecture.dot` exists and is valid DOT syntax
@@ -83,6 +89,8 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 - [ ] Context @mention edges match actual @mentions in agent files
 - [ ] Mode transition edges match actual allowed_transitions in mode files
 - [ ] No orphaned nodes (files not connected to anything)
+- [ ] Composition edges (`style=dashed, color=blue`) match actual `includes:` entries in behavior YAML
+- [ ] Flow edges (`style=bold, color=green`) match actual `delegate()` calls in agent instructions
 
 ## Delegation
 
@@ -102,6 +110,10 @@ When uncertain about a composition rule: delegate to `foundation:foundation-expe
 - Agent description quality: X.X/1.0 — [specific issues]
 - Composition hygiene: X.X/1.0 — [specific issues]
 - **Overall Level 2: X.XX**
+
+### Traceability
+- Unmet requirements: [list requirements without artifacts, or 'none']
+- Orphaned artifacts: [list artifacts with no requirement tracing, or 'none']
 
 ### Issues (prioritized)
 1. [CRITICAL] [issue] — in [file] — [what's wrong and why it matters]
