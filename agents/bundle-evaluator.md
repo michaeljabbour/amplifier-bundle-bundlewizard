@@ -70,7 +70,22 @@ Verify programmatically where possible:
 
 ### Runtime Verification (Level 1 extension)
 
-When possible, verify the bundle actually LOADS in a real Amplifier session:
+Verify the bundle actually LOADS by running a smoke test. **Preferred: use shadow environment** (isolated, disposable).
+
+```bash
+# Create shadow environment
+amplifier-shadow create --id smoke-test
+
+# Install bundle and run test prompts (run ALL prompts from spec or packager output)
+amplifier-shadow exec smoke-test amplifier --bundle <bundle-dir>/bundle.md --run "list available agents"
+amplifier-shadow exec smoke-test amplifier --bundle <bundle-dir>/bundle.md --run "<test-prompt-2>"
+# ... repeat for every test prompt from the spec or packager output
+
+# Destroy shadow when done
+amplifier-shadow destroy smoke-test
+```
+
+**Fallback** (if `amplifier-shadow` command is not available): fall back to a real-environment smoke test:
 
 ```bash
 # Quick smoke test — does the bundle load without errors?
