@@ -6,17 +6,22 @@ Verify that skills/bundle-reference/SKILL.md contains:
 - At least 3 anti-pattern table entries
 """
 
-from pathlib import Path
+import functools
 
-from conftest import required_text
+from conftest import SKILLS_DIR, extract_markdown_section, required_text
 
-SKILL_MD = Path(__file__).parent.parent / "skills" / "bundle-reference" / "SKILL.md"
+SKILL_MD = SKILLS_DIR / "bundle-reference" / "SKILL.md"
 
 
-def _read_skill() -> str:
+def _skill_text() -> str:
     """Return the raw text of skills/bundle-reference/SKILL.md."""
-    assert SKILL_MD.exists(), f"{SKILL_MD} does not exist"
     return required_text(SKILL_MD)
+
+
+@functools.lru_cache(maxsize=1)
+def _exemplar_corpus_section() -> str:
+    """Return the cached ## Reference: Exemplar Corpus section."""
+    return extract_markdown_section(_skill_text(), "Reference: Exemplar Corpus")
 
 
 # ---------------------------------------------------------------------------
@@ -26,8 +31,7 @@ def _read_skill() -> str:
 
 def test_bundle_reference_has_exemplar_corpus():
     """SKILL.md must contain a ## Reference: Exemplar Corpus section."""
-    text = _read_skill()
-    assert "## Reference: Exemplar Corpus" in text, (
+    assert _exemplar_corpus_section().startswith("## Reference: Exemplar Corpus"), (
         "skills/bundle-reference/SKILL.md must contain a "
         "'## Reference: Exemplar Corpus' section"
     )
@@ -35,8 +39,7 @@ def test_bundle_reference_has_exemplar_corpus():
 
 def test_bundle_reference_mentions_recipes_exemplar():
     """SKILL.md must mention amplifier-bundle-recipes as a known-good bundle."""
-    text = _read_skill()
-    assert "amplifier-bundle-recipes" in text, (
+    assert "amplifier-bundle-recipes" in _exemplar_corpus_section(), (
         "skills/bundle-reference/SKILL.md must mention 'amplifier-bundle-recipes' "
         "in the Known-Good Bundles table"
     )
@@ -44,19 +47,13 @@ def test_bundle_reference_mentions_recipes_exemplar():
 
 def test_bundle_reference_has_anti_patterns():
     """SKILL.md must have at least 3 anti-pattern table entries in the Exemplar Corpus section."""
-    text = _read_skill()
-    # Find the Anti-Pattern Examples section
-    assert "### Anti-Pattern Examples" in text, (
-        "skills/bundle-reference/SKILL.md must contain a "
-        "'### Anti-Pattern Examples' subsection"
+    anti_pattern_section = extract_markdown_section(
+        _exemplar_corpus_section(), "Anti-Pattern Examples", level=3
     )
-    # Extract the section after Anti-Pattern Examples
-    section_start = text.index("### Anti-Pattern Examples")
-    section_text = text[section_start:]
 
     # Count table rows (lines starting with | that are not header or separator rows)
     # Header row contains "Anti-Pattern", separator row contains "---"
-    lines = section_text.split("\n")
+    lines = anti_pattern_section.split("\n")
     data_rows = [
         line
         for line in lines
