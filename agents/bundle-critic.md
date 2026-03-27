@@ -63,6 +63,8 @@ You DO NOT fix anything. You identify and report. The refiner handles fixes.
 
 ### Philosophical (Level 2 rubric — score each)
 
+When scoring Level 2, load the `bundle-reference` skill for pattern comparison against known-good exemplars.
+
 - [ ] **Thin bundle pattern:** bundle.md ≤20 lines frontmatter? No @mentions in body? No redeclaration?
 - [ ] **Context sink discipline:** Root context ≤2 files? No heavy root context? Agents @mention only what they need?
 - [ ] **Agent description quality:** Every agent has WHY/WHEN/WHAT/HOW? 2+ examples with `<example>` tags?

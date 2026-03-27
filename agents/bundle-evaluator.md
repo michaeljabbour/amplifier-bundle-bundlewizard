@@ -98,6 +98,8 @@ Do NOT declare Level 1 PASS without attempting a runtime load if the bundle incl
 
 ### Level 2: Philosophical (scored 0.0–1.0, threshold 0.85)
 
+When scoring Level 2, load the `bundle-reference` skill for pattern comparison against known-good exemplars.
+
 Score each criterion using the rubric from @bundlewizard:context/convergence-criteria.md:
 - Thin bundle pattern (25%)
 - Context sink discipline (25%)
