@@ -115,11 +115,31 @@ Delegate to the appropriate domain expert:
 
 The domain expert depends on what the bundle does. For a code review bundle → delegate to a coding expert. For a workflow bundle → test the recipe structure.
 
+**Consumer Experience (additional consideration within L3):** Score against the spec's `## Consumer Experience` section:
+- README clarity for the target persona
+- Agent description understandability
+- Mode discoverability
+- First-run experience match
+
+This is not a separate score — it is an additional lens applied within the L3 functional assessment.
+
 ### Convergence Decision
 
 ```
 converged = (level_1 == PASS) AND (level_2 >= 0.85) AND (level_3 >= 0.80)
 ```
+
+### Triangulation
+
+Cross-check three independent legs to detect hidden divergence:
+
+- **Intent** — Traceability matrix: are there orphaned artifacts (artifacts not traceable to any requirement) or unmet requirements (requirements with no corresponding artifact)?
+- **Structure** — L2 score plus alignment with exemplar patterns from the `bundle-reference` skill.
+- **Function** — L3 score plus results of shadow test prompts run during Runtime Verification.
+
+If any two legs disagree (e.g., Structure says patterns are correct but Function shows broken paths), flag the disagreement explicitly.
+
+Triangulation is a signal, not a gate. It does not block convergence on its own, but disagreements must be reported so the orchestrator can decide.
 
 ## Output
 
@@ -140,6 +160,19 @@ converged = (level_1 == PASS) AND (level_2 >= 0.85) AND (level_3 >= 0.80)
 ### Level 3: Functional
 - **Score: X.XX** (threshold: 0.80)
 - [domain-specific assessment details]
+- Consumer experience: [README clarity / agent description understandability / mode discoverability / first-run experience match]
+
+### Shadow Test Results
+- Environment: shadow / real
+- [test prompt 1]: PASS / FAIL
+- [test prompt 2]: PASS / FAIL
+- [repeat for each test prompt]
+
+### Triangulation
+- Intent: [traceability status — orphaned artifacts / unmet requirements / ALIGNED]
+- Structure: [L2 score alignment with exemplar patterns — ALIGNED / DISAGREEMENT]
+- Function: [L3 score alignment with shadow test results — ALIGNED / DISAGREEMENT]
+- Cross-check: ALIGNED / DISAGREEMENT ([describe any disagreement between legs])
 
 ### Convergence
 - **Status: CONVERGED / NOT CONVERGED**
